@@ -1,0 +1,14 @@
+
+					<packages>
+						<package name="StreamSocialNetworks" version="6.7.30" os="all" url="http://www.promtools.org/prom6/packages/StreamSocialNetworks/StreamSocialNetworks-6.7.30-all.zip" desc="StreamSocialNetworks" org="Eindhoven University of Technology" license="L-GPL" author="S.J. van Zelst" auto="false" hasPlugins="true" logo="http://www.promtools.org/prom6/packages/prom_subtitle_hat_300.png">
+				        <dependency org="prom" name="ProM-Plugins" rev="latest" changing="true" transitive="true" />
+        <dependency org="prom" name="BasicUtils" rev="latest" changing="true" transitive="true" />
+        <dependency org="prom" name="Log" rev="latest" changing="true" transitive="true" />
+        <dependency org="prom" name="EventStream" rev="latest" changing="true" transitive="true" />
+        <dependency org="prom" name="GraphViz" rev="latest" changing="true" transitive="true" />
+        <dependency org="prom" name="SocialNetwork" rev="latest" changing="true" transitive="true" />
+        <dependency org="prom" name="Stream" rev="latest" changing="true" transitive="true" />
+
+						</package>
+					</packages>
+				
