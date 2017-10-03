@@ -24,15 +24,16 @@ public class SimilarTaskNetwork {
 	}
 	
 	/**
-	 * Returns a collection of resource activity pairs that denotes the number of times a resource performs an activity
+	 * Returns a similar tasks network.
 	 */
-	public TObjectDoubleMap<ResourceActivityPair> countActivitiesPerformed() {	
-		String resource = null;
-		String activity = null;
+	public TObjectDoubleMap<ResourcesPair> computeNetwork() {
+		// Indicates the number of times a resource performs an activity
+		TObjectDoubleMap<ResourceActivityPair> activityCount = new TObjectDoubleHashMap<>();
 		
-		TObjectDoubleMap<ResourceActivityPair> rapSetActivityCount = new TObjectDoubleHashMap<>();
+		// Indicates the values for the working together network
+		TObjectDoubleMap<ResourcesPair> network = new TObjectDoubleHashMap<>();
 		
-
+		// Loop over all traces of the event log
 		for (XTrace trace : bpiLog) {
 			// Loop over all events of the case
 			for (int i = 0; i < trace.size(); i++) {
@@ -40,84 +41,114 @@ public class SimilarTaskNetwork {
 				
 				// Ignore the events that do not contain resource information		
 				if (event.getAttributes().containsKey(XOrganizationalExtension.KEY_RESOURCE)) {		
-					resource = event.getAttributes().get(XOrganizationalExtension.KEY_RESOURCE).toString();
-					activity = event.getAttributes().get(XConceptExtension.KEY_NAME).toString();
+					String resource = event.getAttributes().get(XOrganizationalExtension.KEY_RESOURCE).toString();
+					String activity = event.getAttributes().get(XConceptExtension.KEY_NAME).toString();
 				
 					ResourceActivityPair rap = new ResourceActivityPair(resource, activity);
 
-					// Add the resource activity pair to the set
-					if (!rapSetActivityCount.containsKey(rap)) {
-						rapSetActivityCount.put(rap, 0);
+					// Add the resource activity pair to the set when it is not already present
+					if (!activityCount.containsKey(rap)) {
+						activityCount.put(rap, 0);
 					}
 					
 					// Increase the number of times the resource performs an activity with 1
-					rapSetActivityCount.increment(rap);
+					activityCount.increment(rap);
 				}
 			}
 		}
 		
-		return rapSetActivityCount;
+		network = computeValuesForNetwork(activityCount);
+		
+		return network;
 	}
 	
-	
-	public List<List<Integer>> countSimilarTasks(TObjectDoubleMap<ResourceActivityPair> nrOfActivitiesPerformed) {
-		// Matrix indicating the number of similar tasks that resources perform in common.	
-		List<List<Integer>> nrOfSimilarTasks = new ArrayList<>();
-	
-		// Initialize entry [0,0] to be -1
-		nrOfSimilarTasks.add(new ArrayList<Integer>());
-		nrOfSimilarTasks.get(0).add(0, -1);
-				
-		Set<ResourceActivityPair> rapSet =  new HashSet<>();
-		rapSet = nrOfActivitiesPerformed.keySet();
+	/**
+	 * Computes the values for the similar task network
+	 */
+	public TObjectDoubleMap<ResourcesPair> computeValuesForNetwork(TObjectDoubleMap<ResourceActivityPair> activityCount) {
+		TObjectDoubleMap<ResourcesPair> network = new TObjectDoubleHashMap<>();
 		
-		// Iterate over all resource activity pairs
-		for (ResourceActivityPair rap : rapSet) {
-			int resource = Integer.parseInt(rap.getResource());
-			
-			// Update the similar tasks matrix when resource is not seen yet
-			if (!nrOfSimilarTasks.get(0).contains(resource)) {				
-				nrOfSimilarTasks = updateMatrix(nrOfSimilarTasks, resource);			
-			} 		
-			
-			for (ResourceActivityPair rap2 : rapSet) {
-				int resource2 = Integer.parseInt(rap2.getResource());
+		Set<ResourceActivityPair> rpSet =  new HashSet<>();
+		rpSet = activityCount.keySet();
+		
+		// Iterate over all resource activity pairs 
+		for (ResourceActivityPair rap : rpSet) {
+			for (ResourceActivityPair rap2 : rpSet) {
+				String resourceA = rap.getResource();
+				String resourceB = rap2.getResource();
 				
-				// Update the similar tasks matrix when resource is not seen yet
-				if (!nrOfSimilarTasks.get(0).contains(resource2)) {				
-					nrOfSimilarTasks = updateMatrix(nrOfSimilarTasks, resource2);			
-				} 	
-				
-				// Compare the activity of resource with activities of other resources
-				if (resource != resource2) {
-					// If similar activities are performed add 1 to the correct entry of similar task matrix
+				// Increment the similar task value with 1 if two resources are different and they perform the same task
+				if (!resourceA.equals(resourceB)) {
 					if (rap.getActivity().equals(rap2.getActivity())) {
-						// Get the index of the resources
-						int indexA = nrOfSimilarTasks.get(0).indexOf(resource);				
-						int indexB = nrOfSimilarTasks.get(0).indexOf(resource2);						
-						int oldValue = nrOfSimilarTasks.get(indexA).get(indexB);
-
-						nrOfSimilarTasks.get(indexA).set(indexB, oldValue + 1);
+						ResourcesPair rp = new ResourcesPair(resourceA, resourceB);
+						
+						// Add the resource activity pair to the set when it is not present
+						if (!network.containsKey(rp)) {
+							network.put(rp, 0);
+						}
+						
+						network.increment(rp);
 					}
 				}
-			}
+			}	
 		}
 		
-		return nrOfSimilarTasks;
+		return network;
 	}
 	
-	// Update the matrix when a new resource is seen (= add new row and column and fill entries with 0)
-	public List<List<Integer>> updateMatrix(List<List<Integer>> matrix, int resource) {
+	/**
+	 * Returns a matrix representation of the working together network
+	 */
+	public List<List<Double>> visualizeNetwork(TObjectDoubleMap<ResourcesPair> workingTogetherNetwork) {
+		// Matrix indicating the values of the working together network
+		List<List<Double>> network = new ArrayList<>();
+		
+		// Initialize entry [0,0] to be -1
+		network.add(new ArrayList<Double>());
+		network.get(0).add(0, -1.0);
+				
+		Set<ResourcesPair> rpSet =  new HashSet<>();
+		rpSet = workingTogetherNetwork.keySet();
+		
+		for (ResourcesPair rp : rpSet) {
+			double resourceA = Double.parseDouble(rp.getResourceA());
+			double resourceB = Double.parseDouble(rp.getResourceB());
+			
+			// Update the similar tasks matrix when resourceA is not seen yet
+			if (!network.get(0).contains(resourceA)) {				
+				network = updateMatrix(network, resourceA);			
+			} 
+			
+			// Update the similar tasks matrix when resourceB is not seen yet
+			if (!network.get(0).contains(resourceB)) {				
+				network = updateMatrix(network, resourceB);			
+			} 
+			
+			// Get the index of the resources
+			int indexA = network.get(0).indexOf(resourceA);				
+			int indexB = network.get(0).indexOf(resourceB);						
+
+			// Assign the working together value of the resources pair
+			network.get(indexA).set(indexB, workingTogetherNetwork.get(rp));		
+		}
+			
+		return network;
+	}
+	
+	/**
+	 * Update the matrix when a new resource is seen (= add new row and column and fill entries with 0)
+	 */
+	public List<List<Double>> updateMatrix(List<List<Double>> matrix, double resource) {
 		// Update the matrix with a new row and column
-		matrix.add(new ArrayList<Integer>());	
+		matrix.add(new ArrayList<Double>());	
 		
 		// Assign value 0 to the new entries to fill up the matrix
 		for (int i = 0; i < matrix.size()-1; i++) {
-			matrix.get(matrix.size()-1).add(i, 0);
+			matrix.get(matrix.size()-1).add(i, 0.0);
 		}	
 		
 		for (int i = 0; i < matrix.size(); i++) {
-			matrix.get(i).add(matrix.size()-1, 0);
+			matrix.get(i).add(matrix.size()-1, 0.0);
 		}					
 		
 		// Add the resource ID to the row and column	
@@ -126,20 +157,20 @@ public class SimilarTaskNetwork {
 		
 		return matrix;
 	}
+	
 
 	public static void main(final String[] args) {
 		XLog bpiLog = XESImporter.importXLog(new File("C:\\Users\\s145283\\Desktop\\2IMI05 - Capita Selecta\\BPI_Challenge_2012.xes"));
 		
 		SimilarTaskNetwork network = new SimilarTaskNetwork(bpiLog);
 		
-		// Computes the number of times resources perform activities
-		TObjectDoubleMap<ResourceActivityPair> nrOfActivitiesPerformed = network.countActivitiesPerformed();
-		
-		// Return a matrix with how many tasks two resources perform in common.
-		List<List<Integer>> matrix = network.countSimilarTasks(nrOfActivitiesPerformed);
-		
-		for (int i = 0; i < matrix.size(); i++) {
-			System.out.println(matrix.get(i));
-		}
+		// Compute the values for the similar task network
+		TObjectDoubleMap<ResourcesPair> similarTaskNetwork = network.computeNetwork();
+		// Visualize the network
+		List<List<Double>> similarTaskNetworkVisualization = network.visualizeNetwork(similarTaskNetwork);
+				
+		for (int i = 0; i < similarTaskNetworkVisualization.size(); i++) {
+			System.out.println(similarTaskNetworkVisualization.get(i));
+		}	
 	}
 }
