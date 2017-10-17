@@ -1,6 +1,4 @@
-package org.processmining.streamsocialnetworks.mcmclouvain;
-
-import java.util.Set;
+package org.processmining.streamsocialnetworks.louvain;
 
 public class NodesPair {
 	Node nodeA;

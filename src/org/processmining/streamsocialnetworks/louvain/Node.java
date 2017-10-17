@@ -1,4 +1,4 @@
-package org.processmining.streamsocialnetworks.mcmclouvain;
+package org.processmining.streamsocialnetworks.louvain;
 
 import java.util.Set;
 
