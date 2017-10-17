@@ -13,7 +13,7 @@ import org.processmining.streamsocialnetworks.util.XESImporter;
 public class ExampleLogIterator {
 
 	public static void main(final String[] args) {
-		XLog bpiLog = XESImporter.importXLog(new File("E:\\svn\\private\\logs\\BPI_Challenge_2012.xes"));
+		XLog bpiLog = XESImporter.importXLog(new File("C:\\Users\\s145283\\Desktop\\2IMI05 - Capita Selecta\\BPI_Challenge_2012.xes"));
 		for (XTrace trace : bpiLog) {
 			String traceIdentifier = trace.getAttributes().get(XConceptExtension.KEY_NAME).toString();
 			for (int i = 0; i < trace.size(); i++) {

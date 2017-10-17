@@ -373,26 +373,26 @@ public class Louvain {
 		
 		// Choose a network type
 		WorkingTogetherNetwork network = new WorkingTogetherNetwork(bpiLog);
-		// SimilarTaskNetwork network = new SimilarTaskNetwork(bpiLog);
-		// HandoverOfWorkNetwork network = new HandoverOfWorkNetwork(bpiLog);
+		//SimilarTaskNetwork network = new SimilarTaskNetwork(bpiLog);
+		//HandoverOfWorkNetwork network = new HandoverOfWorkNetwork(bpiLog);
 		
 		// Compute the values of the network
 		TObjectDoubleMap<ResourcesPair> workingTogetherNetwork = network.computeNetwork();
-		// TObjectDoubleMap<ResourcesPair> similarTaskNetwork = network.computeNetwork();
-		// TObjectDoubleMap<ResourcesPair> handoverOfWorkNetwork = network.computeNetwork();
+		//TObjectDoubleMap<ResourcesPair> similarTaskNetwork = network.computeNetwork();
+		//TObjectDoubleMap<ResourcesPair> handoverOfWorkNetwork = network.computeNetwork();
 		
 		// Detect communities for the network
 		Louvain communityDetection = new Louvain();
 		TObjectDoubleMap<NodesPair> communityNetwork = communityDetection.louvain(workingTogetherNetwork);
-		// TObjectDoubleMap<NodesPair> communityNetwork = communityDetection.louvain(similarTaskNetwork);
-		// TObjectDoubleMap<NodesPair> communityNetwork = communityDetection.louvain(handoverOfWorkNetwork);
+		//TObjectDoubleMap<NodesPair> communityNetwork = communityDetection.louvain(similarTaskNetwork);
+		//TObjectDoubleMap<NodesPair> communityNetwork = communityDetection.louvain(handoverOfWorkNetwork);
 		
 		// How many number of resources?
 		Set<String> resources = new HashSet<>();
 		
 		for (ResourcesPair rp : workingTogetherNetwork.keySet()) {	
-		// for (ResourcesPair rp : similarTaskNetwork.keySet()) {	
-		// for (ResourcesPair rp : handoverOfWorkNetwork.keySet()) {		
+		//for (ResourcesPair rp : similarTaskNetwork.keySet()) {	
+		//for (ResourcesPair rp : handoverOfWorkNetwork.keySet()) {		
 			String resourceA = rp.getResourceA();
 			String resourceB = rp.getResourceB();
 			
@@ -407,8 +407,8 @@ public class Louvain {
 		
 		System.out.println("resources " + resources.size());
 		System.out.println("resourcesPair " + workingTogetherNetwork.keySet().size());
-		// System.out.println("resourcesPair " + similarTaskNetwork.keySet().size());
-		// System.out.println("resourcesPair " + handoverOfWorkNetwork.keySet().size());
+		//System.out.println("resourcesPair " + similarTaskNetwork.keySet().size());
+		//System.out.println("resourcesPair " + handoverOfWorkNetwork.keySet().size());
 		
 		// How many number of communities? -- each node in the community network is represents a community
 		Set<Node> communities = new HashSet<>();
