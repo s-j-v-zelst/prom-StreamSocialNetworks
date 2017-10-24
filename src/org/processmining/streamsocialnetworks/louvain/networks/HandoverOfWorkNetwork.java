@@ -1,4 +1,4 @@
-package org.processmining.streamsocialnetworks.louvain;
+package org.processmining.streamsocialnetworks.louvain.networks;
 
 import java.util.List;
 import java.io.File;
@@ -8,6 +8,9 @@ import org.deckfour.xes.extension.std.XOrganizationalExtension;
 import org.deckfour.xes.model.XEvent;
 import org.deckfour.xes.model.XLog;
 import org.deckfour.xes.model.XTrace;
+import org.processmining.streamsocialnetworks.louvain.LSocialNetwork;
+import org.processmining.streamsocialnetworks.louvain.ResourcesPair;
+import org.processmining.streamsocialnetworks.louvain.LSocialNetwork.Type;
 import org.processmining.streamsocialnetworks.util.XESImporter;
 
 import gnu.trove.map.TObjectDoubleMap;
@@ -23,9 +26,10 @@ public class HandoverOfWorkNetwork {
 	/**
 	 * Returns a handover of work network with direct succession.
 	 */
-	public TObjectDoubleMap<ResourcesPair> computeNetwork() {
+	public LSocialNetwork computeNetwork() {
 		// Indicates the values for the handover of work network
-		TObjectDoubleMap<ResourcesPair> network = new TObjectDoubleHashMap<>();
+		// TObjectDoubleMap<ResourcesPair> network = new TObjectDoubleHashMap<>();
+		LSocialNetwork network = new LSocialNetwork(LSocialNetwork.Type.HANDOVER);
 		
 		// Indicates the number of times resources hand over work
 		TObjectDoubleMap<ResourcesPair> handover = new TObjectDoubleHashMap<>();	
@@ -101,8 +105,9 @@ public class HandoverOfWorkNetwork {
 	/**
 	 * Computes the values for the handover of work network
 	 */
-	public TObjectDoubleMap<ResourcesPair> computeValuesForNetwork(TObjectDoubleMap<ResourcesPair> handover, int nrOfHandovers) {
-		TObjectDoubleMap<ResourcesPair> network = new TObjectDoubleHashMap<>();
+	public LSocialNetwork computeValuesForNetwork(TObjectDoubleMap<ResourcesPair> handover, int nrOfHandovers) {
+		// TObjectDoubleMap<ResourcesPair> network = new TObjectDoubleHashMap<>();
+		LSocialNetwork network = new LSocialNetwork(LSocialNetwork.Type.HANDOVER);
 		double value = 0;
 		
 		// Iterate over all resources pairs
@@ -121,14 +126,14 @@ public class HandoverOfWorkNetwork {
 		HandoverOfWorkNetwork network = new HandoverOfWorkNetwork(bpiLog);
 		
 		// Compute the values for the similar task network
-		TObjectDoubleMap<ResourcesPair> handoverOfWorkNetwork = network.computeNetwork();
+		LSocialNetwork handoverOfWorkNetwork = network.computeNetwork();
 		
 		// Visualize the network
-		MatrixVisualization visualization = new MatrixVisualization();
-		List<List<Double>> networkVisualization = visualization.visualizeNetwork(handoverOfWorkNetwork);
+		// MatrixVisualization visualization = new MatrixVisualization();
+		// List<List<Double>> networkVisualization = visualization.visualizeNetwork(handoverOfWorkNetwork);
 				
-		for (int i = 0; i < networkVisualization.size(); i++) {
-			System.out.println(networkVisualization.get(i));
-		}	
+		// for (int i = 0; i < networkVisualization.size(); i++) {
+		//	System.out.println(networkVisualization.get(i));
+		// }	
 	}
 }

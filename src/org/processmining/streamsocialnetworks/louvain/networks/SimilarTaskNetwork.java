@@ -1,4 +1,4 @@
-package org.processmining.streamsocialnetworks.louvain;
+package org.processmining.streamsocialnetworks.louvain.networks;
 
 import java.util.HashSet;
 import java.util.List;
@@ -10,6 +10,10 @@ import org.deckfour.xes.extension.std.XOrganizationalExtension;
 import org.deckfour.xes.model.XEvent;
 import org.deckfour.xes.model.XLog;
 import org.deckfour.xes.model.XTrace;
+import org.processmining.streamsocialnetworks.louvain.LSocialNetwork;
+import org.processmining.streamsocialnetworks.louvain.ResourceActivityPair;
+import org.processmining.streamsocialnetworks.louvain.ResourcesPair;
+import org.processmining.streamsocialnetworks.louvain.LSocialNetwork.Type;
 import org.processmining.streamsocialnetworks.util.XESImporter;
 
 import gnu.trove.map.TObjectDoubleMap;
@@ -25,12 +29,13 @@ public class SimilarTaskNetwork {
 	/**
 	 * Returns a similar tasks network.
 	 */
-	public TObjectDoubleMap<ResourcesPair> computeNetwork() {
+	public LSocialNetwork computeNetwork() {
 		// Indicates the number of times a resource performs an activity
 		TObjectDoubleMap<ResourceActivityPair> activityCount = new TObjectDoubleHashMap<>();
 		
 		// Indicates the values for the working together network
-		TObjectDoubleMap<ResourcesPair> network = new TObjectDoubleHashMap<>();
+		// TObjectDoubleMap<ResourcesPair> network = new TObjectDoubleHashMap<>();
+		LSocialNetwork network = new LSocialNetwork(LSocialNetwork.Type.SIMILAR_TASK);
 		
 		// Loop over all traces of the event log
 		for (XTrace trace : bpiLog) {
@@ -64,8 +69,9 @@ public class SimilarTaskNetwork {
 	/**
 	 * Computes the values for the similar task network
 	 */
-	public TObjectDoubleMap<ResourcesPair> computeValuesForNetwork(TObjectDoubleMap<ResourceActivityPair> activityCount) {
-		TObjectDoubleMap<ResourcesPair> network = new TObjectDoubleHashMap<>();
+	public LSocialNetwork computeValuesForNetwork(TObjectDoubleMap<ResourceActivityPair> activityCount) {
+		// TObjectDoubleMap<ResourcesPair> network = new TObjectDoubleHashMap<>();
+		LSocialNetwork network = new LSocialNetwork(LSocialNetwork.Type.SIMILAR_TASK);
 		
 		Set<ResourceActivityPair> rpSet =  new HashSet<>();
 		rpSet = activityCount.keySet();
@@ -101,14 +107,14 @@ public class SimilarTaskNetwork {
 		SimilarTaskNetwork network = new SimilarTaskNetwork(bpiLog);
 		
 		// Compute the values for the similar task network
-		TObjectDoubleMap<ResourcesPair> similarTaskNetwork = network.computeNetwork();
+		LSocialNetwork similarTaskNetwork = network.computeNetwork();
 		
 		// Visualize the network
-		MatrixVisualization visualization = new MatrixVisualization();
-		List<List<Double>> networkVisualization = visualization.visualizeNetwork(similarTaskNetwork);
+		// MatrixVisualization visualization = new MatrixVisualization();
+		// List<List<Double>> networkVisualization = visualization.visualizeNetwork(similarTaskNetwork);
 				
-		for (int i = 0; i < networkVisualization.size(); i++) {
-			System.out.println(networkVisualization.get(i));
-		}	
+		// for (int i = 0; i < networkVisualization.size(); i++) {
+		// 	System.out.println(networkVisualization.get(i));
+		// }	
 	}
 }

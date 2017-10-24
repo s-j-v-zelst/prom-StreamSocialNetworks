@@ -1,4 +1,4 @@
-package org.processmining.streamsocialnetworks.louvain;
+package org.processmining.streamsocialnetworks.louvain.networks;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -10,6 +10,9 @@ import org.deckfour.xes.extension.std.XOrganizationalExtension;
 import org.deckfour.xes.model.XEvent;
 import org.deckfour.xes.model.XLog;
 import org.deckfour.xes.model.XTrace;
+import org.processmining.streamsocialnetworks.louvain.LSocialNetwork;
+import org.processmining.streamsocialnetworks.louvain.ResourcesPair;
+import org.processmining.streamsocialnetworks.louvain.LSocialNetwork.Type;
 import org.processmining.streamsocialnetworks.util.XESImporter;
 
 import gnu.trove.map.TObjectDoubleMap;
@@ -25,7 +28,7 @@ public class WorkingTogetherNetwork {
 	/**
 	 * Returns a working together network.
 	 */
-	public TObjectDoubleMap<ResourcesPair> computeNetwork() {
+	public LSocialNetwork computeNetwork() {
 		// Indicates the number of times resources work together
 		TObjectDoubleMap<ResourcesPair> workingTogether = new TObjectDoubleHashMap<>();
 		
@@ -33,7 +36,7 @@ public class WorkingTogetherNetwork {
 		TObjectDoubleMap<String> working = new TObjectDoubleHashMap<>();				
 		
 		// Indicates the values for the working together network
-		TObjectDoubleMap<ResourcesPair> network = new TObjectDoubleHashMap<>();
+		LSocialNetwork network = new LSocialNetwork(LSocialNetwork.Type.WORKING_TOGETHER);
 		
 		// List of resources 
 		List<String> resources = new ArrayList<>();
@@ -94,9 +97,9 @@ public class WorkingTogetherNetwork {
 	/**
 	 * Computes the values for the working together network
 	 */
-	public TObjectDoubleMap<ResourcesPair> computeValuesForNetwork(TObjectDoubleMap<ResourcesPair> workingTogether, 
+	public LSocialNetwork computeValuesForNetwork(TObjectDoubleMap<ResourcesPair> workingTogether, 
 			TObjectDoubleMap<String> working) {
-		TObjectDoubleMap<ResourcesPair> network = new TObjectDoubleHashMap<>();
+		LSocialNetwork network = new LSocialNetwork(LSocialNetwork.Type.HANDOVER);
 		
 		Set<ResourcesPair> rpSet =  new HashSet<>();
 		rpSet = workingTogether.keySet();
@@ -117,14 +120,14 @@ public class WorkingTogetherNetwork {
 		WorkingTogetherNetwork network = new WorkingTogetherNetwork(bpiLog);
 		
 		// Compute the values for the working together network
-		TObjectDoubleMap<ResourcesPair> workingTogetherNetwork = network.computeNetwork();
+		LSocialNetwork workingTogetherNetwork = network.computeNetwork();
 		
 		// Visualize the network
-		MatrixVisualization visualization = new MatrixVisualization();
-		List<List<Double>> networkVisualization = visualization.visualizeNetwork(workingTogetherNetwork);
+		// MatrixVisualization visualization = new MatrixVisualization();
+		// List<List<Double>> networkVisualization = visualization.visualizeNetwork(workingTogetherNetwork);
 				
-		for (int i = 0; i < networkVisualization.size(); i++) {
-			System.out.println(networkVisualization.get(i));
-		}	
+		// for (int i = 0; i < networkVisualization.size(); i++) {
+		// 	System.out.println(networkVisualization.get(i));
+		// }	
 	}
 }

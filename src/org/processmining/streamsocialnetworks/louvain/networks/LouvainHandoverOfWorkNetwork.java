@@ -1,25 +1,25 @@
-package org.processmining.streamsocialnetworks.louvain;
+package org.processmining.streamsocialnetworks.louvain.networks;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.deckfour.xes.model.XLog;
-import org.processmining.streamsocialnetworks.louvain.networks.WorkingTogetherNetwork;
-import org.processmining.streamsocialnetworks.util.XESImporter;
+import org.processmining.streamsocialnetworks.louvain.LSocialNetworkClustered;
+import org.processmining.streamsocialnetworks.louvain.Node;
+import org.processmining.streamsocialnetworks.louvain.NodesPair;
+import org.processmining.streamsocialnetworks.louvain.ResourcesPair;
+import org.processmining.streamsocialnetworks.louvain.LSocialNetworkClustered.Type;
 
 import gnu.trove.map.TObjectDoubleMap;
-import gnu.trove.map.hash.TObjectDoubleHashMap;
 
-public class Louvain {
+public class LouvainHandoverOfWorkNetwork {
 	boolean stop;
 	
 	/**
 	 * Determines the communities with the highest modularity gain with the use of Louvain
 	 */
-	public TObjectDoubleMap<NodesPair> louvain(TObjectDoubleMap<ResourcesPair> network) {			
+	public LSocialNetworkClustered louvain(TObjectDoubleMap<ResourcesPair> network) {			
 		// Initialize the network consisting of nodes in which each node is a community of one or several resources
-		TObjectDoubleMap<NodesPair> communityNetwork = initializeNetwork(network);
+		LSocialNetworkClustered communityNetwork = initializeNetwork(network);
 		
 		// Get the set of nodes
 		Set<Node> nodes = new HashSet<>();
@@ -145,9 +145,9 @@ public class Louvain {
 	 * The weights of the links between the new nodes are given by the sum of the weight of the links
 	 * between nodes in the corresponding two communities.
 	 */
-	public TObjectDoubleMap<NodesPair> aggregation(TObjectDoubleMap<NodesPair> communityNetwork, Set<Set<Node>> communities) {
+	public LSocialNetworkClustered aggregation(TObjectDoubleMap<NodesPair> communityNetwork, Set<Set<Node>> communities) {
 		// The new community network
-		TObjectDoubleMap<NodesPair> newCommunityNetwork = new TObjectDoubleHashMap<>();;
+		LSocialNetworkClustered newCommunityNetwork = new LSocialNetworkClustered(LSocialNetworkClustered.Type.HANDOVER);
 		
 		// Add the communities as nodes to the network with corresponding edge values
 		for (Set<Node> communityA : communities) {
@@ -229,9 +229,9 @@ public class Louvain {
 	/**
 	 * Create the initial network consisting of nodes
 	 */
-	public TObjectDoubleMap<NodesPair> initializeNetwork(TObjectDoubleMap<ResourcesPair> network) {
+	public LSocialNetworkClustered initializeNetwork(TObjectDoubleMap<ResourcesPair> network) {
 		// The network consisting of nodes in which each node is a community of one or several resources
-		TObjectDoubleMap<NodesPair> communityNetwork = new TObjectDoubleHashMap<>();
+		LSocialNetworkClustered communityNetwork = new LSocialNetworkClustered(LSocialNetworkClustered.Type.HANDOVER);
 		
 		for (ResourcesPair rp : network.keySet()) {
 			String resourceA = rp.getResourceA();
@@ -367,79 +367,5 @@ public class Louvain {
 		}
 		
 		return community;
-	}
-	
-	public static void main(final String[] args) {
-		XLog bpiLog = XESImporter.importXLog(new File("C:\\Users\\s145283\\Desktop\\2IMI05 - Capita Selecta\\BPI_Challenge_2012.xes"));
-		
-		// Choose a network type
-		WorkingTogetherNetwork network = new WorkingTogetherNetwork(bpiLog);
-		//SimilarTaskNetwork network = new SimilarTaskNetwork(bpiLog);
-		//HandoverOfWorkNetwork network = new HandoverOfWorkNetwork(bpiLog);
-		
-		// Compute the values of the network
-		TObjectDoubleMap<ResourcesPair> workingTogetherNetwork = network.computeNetwork();
-		//TObjectDoubleMap<ResourcesPair> similarTaskNetwork = network.computeNetwork();
-		//TObjectDoubleMap<ResourcesPair> handoverOfWorkNetwork = network.computeNetwork();
-		
-		// Detect communities for the network
-		Louvain communityDetection = new Louvain();
-		TObjectDoubleMap<NodesPair> communityNetwork = communityDetection.louvain(workingTogetherNetwork);
-		//TObjectDoubleMap<NodesPair> communityNetwork = communityDetection.louvain(similarTaskNetwork);
-		//TObjectDoubleMap<NodesPair> communityNetwork = communityDetection.louvain(handoverOfWorkNetwork);
-		
-		// How many number of resources?
-		Set<String> resources = new HashSet<>();
-		
-		for (ResourcesPair rp : workingTogetherNetwork.keySet()) {	
-		//for (ResourcesPair rp : similarTaskNetwork.keySet()) {	
-		//for (ResourcesPair rp : handoverOfWorkNetwork.keySet()) {		
-			String resourceA = rp.getResourceA();
-			String resourceB = rp.getResourceB();
-			
-			if (!resources.contains(resourceA)) {
-				resources.add(resourceA);
-			}
-			
-			if (!resources.contains(resourceB)) {
-				resources.add(resourceB);
-			}
-		}
-		
-		System.out.println("resources " + resources.size());
-		System.out.println("resourcesPair " + workingTogetherNetwork.keySet().size());
-		//System.out.println("resourcesPair " + similarTaskNetwork.keySet().size());
-		//System.out.println("resourcesPair " + handoverOfWorkNetwork.keySet().size());
-		
-		// How many number of communities? -- each node in the community network is represents a community
-		Set<Node> communities = new HashSet<>();
-		
-		for (NodesPair np : communityNetwork.keySet()) {		
-			Node nodeA = np.getNodeA();
-			Node nodeB = np.getNodeB();
-			
-			if (!communities.contains(nodeA)) {
-				communities.add(nodeA);
-			}
-			
-			if (!communities.contains(nodeB)) {
-				communities.add(nodeB);
-			}
-		}
-		
-		System.out.println("communities " + communities.size());
-		System.out.println("communitiesPair " + communityNetwork.keySet().size());
-		
-		
-		// What are the communities?
-		for (Node node : communities) {
-			Set<String> resourcesInCommunity = node.getResources();
-			
-			System.out.println("Community consists of resources: ");
-			for (String r : resourcesInCommunity) {
-				System.out.println(r);
-			}
-		}
-		
 	}
 }
