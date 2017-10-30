@@ -9,11 +9,11 @@ import org.processmining.streamsocialnetworks.louvain.LSocialNetwork;
 import org.processmining.streamsocialnetworks.louvain.LSocialNetwork.Type;
 import org.processmining.streamsocialnetworks.louvain.networks.WorkingTogetherNetwork;
 
-@Plugin(name = "Louvain Network Clustering", parameterLabels = { "Event Log" }, returnLabels = {
-		"Clustering" }, returnTypes = { LSocialNetwork.class })
+@Plugin(name = "Working Together Network", parameterLabels = { "Event Log" }, returnLabels = {
+		"Social Network" }, returnTypes = { LSocialNetwork.class })
 public class WorkingTogetherNetworkPlugin {
 	@UITopiaVariant(author = "C. Verhoef", email = "c.verhoef@student.tue.nl", affiliation = "Eindhoven University of Technology")
-	@PluginVariant(variantLabel = "Louvain Network Clustering", requiredParameterLabels = { 0 })
+	@PluginVariant(variantLabel = "Working Together Network", requiredParameterLabels = { 0 })
 	public static LSocialNetwork runPlugin(PluginContext context, XLog log) {
 		// Define the type of the network
 		WorkingTogetherNetwork network = new WorkingTogetherNetwork(log);
