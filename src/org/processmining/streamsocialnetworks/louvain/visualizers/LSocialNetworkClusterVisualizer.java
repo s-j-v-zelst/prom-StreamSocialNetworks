@@ -1,8 +1,14 @@
 package org.processmining.streamsocialnetworks.louvain.visualizers;
 
+import java.awt.BorderLayout;
+
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+import org.graphstream.graph.Graph;
+import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.ui.swingViewer.ViewPanel;
+import org.graphstream.ui.view.Viewer;
 import org.processmining.contexts.uitopia.annotations.UITopiaVariant;
 import org.processmining.contexts.uitopia.annotations.Visualizer;
 import org.processmining.framework.plugin.PluginContext;
@@ -26,21 +32,35 @@ public class LSocialNetworkClusterVisualizer {
 
 	public static JComponent visualize(final LSocialNetworkClustered network) {
 		JComponent panel = new JPanel();
+		Graph graph = new SingleGraph("Graph Clustered");
+		System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
+		
 		switch (network.getNetworkType()) {
-			case HANDOVER :
-			case WORKING_TOGETHER :
-				panel.add(SlickerFactory.instance().createLabel("This should become a directed clustered graph."));
-				// transfrom the input network to visualization library interface, e.g. graphstream
-				// visualize directed edges;
-				// return the visualization
-				break;
 			case SIMILAR_TASK :
-				panel.add(SlickerFactory.instance().createLabel("This should become an undirected clustered graph."));
-				// transfrom the input network to visualization library interface, e.g. graphstream
-				// visualize undirected edges;
-				// return the visualization
+				// Visualize undirected graph with vertices representing resources
+				graph = GraphClusterVisualization.createGraph(GraphClusterVisualization.Type.UNDIRECTED, network);
+			
+				break;
+			case HANDOVER :
+				// Visualize directed graph with vertices representing resources
+				graph = GraphClusterVisualization.createGraph(GraphClusterVisualization.Type.DIRECTED, network);
+			
+				break;
+			case WORKING_TOGETHER :
+				// Visualize directed graph with vertices representing resources
+				graph = GraphClusterVisualization.createGraph(GraphClusterVisualization.Type.DIRECTED, network);
+	        
 				break;
 		}
+		
+		Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+		ViewPanel viewPanel = viewer.addDefaultView(false);
+		viewPanel.setOpaque(false);
+
+		panel.setLayout(new BorderLayout());
+        panel.add(viewPanel, BorderLayout.CENTER);
+        viewer.enableAutoLayout();
+
 		return panel;
 	}
 

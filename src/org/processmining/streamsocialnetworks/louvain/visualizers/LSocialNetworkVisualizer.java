@@ -27,13 +27,14 @@ import com.fluxicon.slickerbox.factory.SlickerFactory;
 @Plugin(name = "Social Network Visualizer", parameterLabels = { "Social Network" }, returnLabels = {
 		"Social Network Visualizer" }, returnTypes = { JComponent.class })
 @Visualizer
-public class LSocialNetworkVisualizer implements ViewerListener {
+public class LSocialNetworkVisualizer {
 
 	@UITopiaVariant(author = "C. Verhoef", email = "c.verhoef@student.tue.nl", affiliation = "Eindhoven University of Technology")
 	@PluginVariant(variantLabel = "Social Network Visualizer", requiredParameterLabels = { 0 })
 	@Visualizer
 	public JComponent visualize(final PluginContext context, final LSocialNetwork network) {
 		return visualize(network);
+		
 	}
 
 	public JComponent visualize(final LSocialNetwork network) {
@@ -62,10 +63,6 @@ public class LSocialNetworkVisualizer implements ViewerListener {
 		Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
 		ViewPanel viewPanel = viewer.addDefaultView(false);
 		viewPanel.setOpaque(false);
-		
-		ViewerPipe fromViewer = viewer.newViewerPipe();
-		fromViewer.addViewerListener(this);
-		fromViewer.addSink(graph);
 
 		panel.setLayout(new BorderLayout());
         panel.add(viewPanel, BorderLayout.CENTER);
@@ -73,23 +70,4 @@ public class LSocialNetworkVisualizer implements ViewerListener {
 
 		return panel;
 	}
-
-	@Override
-	public void viewClosed(String viewName) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void buttonPushed(String id) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void buttonReleased(String id) {
-		// TODO Auto-generated method stub
-		
-	}
-
 }
