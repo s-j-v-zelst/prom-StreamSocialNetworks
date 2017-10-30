@@ -20,7 +20,7 @@ public class GraphClusterVisualization {
 		System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
 		Graph graph = new SingleGraph("Graph");
 		
-		// Get the resources
+		// Get the nodes
 		Set<Node> nodes = new HashSet<>();
 		
 		for (NodesPair np : network.keySet()) {
@@ -36,15 +36,16 @@ public class GraphClusterVisualization {
 			}
 		}
 		
-		// Add the resources as vertices in the network				
+		// Add the nodes as vertices in the network				
 		for (Node n : nodes) {
 			Set<String> community = n.getResources();
 			
 			StringBuilder label = new StringBuilder();
 			for (String resource : community) {
-				label.append(resource + "-");
+				label.append(resource);
+				label.append("-");
 			}
-			
+			System.out.println(label.toString());
 			graph.addNode(label.toString());
 		}
 		
@@ -100,6 +101,7 @@ public class GraphClusterVisualization {
 					if (network.contains(np)) {
 						graph.addEdge(resourcesNodeA.toString() + "-" + resourcesNodeB.toString(), 
 								resourcesNodeA.toString(), resourcesNodeB.toString(), true);
+						System.out.println("edge exists");
 					} 				
 				}
 			}		
@@ -109,16 +111,16 @@ public class GraphClusterVisualization {
 		for (org.graphstream.graph.Node node : graph) {
 			// Add names to the vertices
 	        node.addAttribute("ui.label", node.getId());
-	        
-	        // Color the vertices
-			node.addAttribute("ui.style", 
-					"fill-color: rgb(204,0,0);" +
-					"size: 15px, 15px;" +
-					"text-background-mode: rounded-box;" +
-					"text-alignment: at-right;");
 	    }
 		
-		// graph.addAttribute("ui.stylesheet", "node:selected {fill-color: blue;}");
+		graph.addAttribute("ui.stylesheet", 
+				  " node {"
+				+ "		fill-color: yellow; "
+				+ "		size: 15px, 15px;"
+				+ "		text-size: 14px;"
+				+ "		text-background-mode: rounded-box; "
+				+ "		text-mode: hidden;"
+				+ "		text-alignment: at-right;}");
 		
 		
 		return graph;
