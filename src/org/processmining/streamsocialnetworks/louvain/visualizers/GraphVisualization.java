@@ -7,6 +7,11 @@ import java.util.Set;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.stream.GraphReplay;
+import org.graphstream.ui.graphicGraph.GraphicNode;
+import org.graphstream.ui.layout.Layout;
+import org.graphstream.ui.layout.springbox.implementations.SpringBox;
+import org.graphstream.ui.view.Viewer;
 import org.processmining.streamsocialnetworks.louvain.LSocialNetwork;
 import org.processmining.streamsocialnetworks.louvain.LSocialNetworkClustered;
 import org.processmining.streamsocialnetworks.louvain.Node;
@@ -29,10 +34,75 @@ public class GraphVisualization {
 	public static Graph createGraph(Type graphType, LSocialNetwork network) {
 		System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
 		Graph graph = new SingleGraph("Graph");
+		Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
 		
 		// Compute communities
 		LouvainWorkingTogetherNetwork clustering = new LouvainWorkingTogetherNetwork();
 		LSocialNetworkClustered networkClustered =  clustering.louvain(network);
+		
+		
+		
+		/**
+		 * Create the network of individual resources
+		 */
+		
+		// Get the resources
+		Set<String> resources = new HashSet<>();
+		
+		for (ResourcesPair rp : network.keySet()) {
+			String resourceA = rp.getResourceA();
+			String resourceB = rp.getResourceB();
+
+			if (!resources.contains(resourceA)) {
+				resources.add(resourceA);
+			}
+			
+			if (!resources.contains(resourceB)) {
+				resources.add(resourceB);
+			}
+		}
+		
+		// Add the resources as vertices in the network			
+		for (String resource : resources) {
+			graph.addNode(resource);
+			graph.getNode(resource).addAttribute("ui.class", "individual");
+		}
+		
+		// Add edges between vertices 
+		if (graphType == Type.UNDIRECTED) { // Create undirected edges
+			for (String resourceA : resources) {
+				for (String resourceB : resources) {
+					ResourcesPair rp = new ResourcesPair(resourceA, resourceB);
+				
+					if (network.contains(rp) && graph.getEdge(resourceB + "-" + resourceA) == null) {
+						graph.addEdge(resourceA + "-" + resourceB, resourceA, resourceB);
+						graph.getEdge(resourceA + "-" + resourceB).addAttribute("ui.class", "individual");
+					} 				
+				}
+			}
+		} else { // Create directed edges
+			for (String resourceA : resources) {
+				for (String resourceB : resources) {
+					ResourcesPair rp = new ResourcesPair(resourceA, resourceB);
+				
+					if (network.contains(rp)) {
+						graph.addEdge(resourceA + "-" + resourceB, resourceA, resourceB, true);
+						graph.getEdge(resourceA + "-" + resourceB).addAttribute("ui.class", "individual");
+					} 				
+				}
+			}		
+		}
+		
+		for (org.graphstream.graph.Node node : graph) {
+			// Add names to the nodes
+	        node.addAttribute("ui.label", node.getId());
+	        
+	    }
+		
+		// Compute the layout
+		Layout layout = new SpringBox(false);;
+		computeLayout(graph, layout);
+		
 		
 		/**
 		 * Create the network of communities
@@ -60,12 +130,24 @@ public class GraphVisualization {
 			
 			StringBuilder label = new StringBuilder();
 			
+			String position = null; // Position of one of the resources in the community
+			
 			for (String resource : community) {
 				label.append(resource);
 				label.append("-");
+				position = resource;
 			}
 			
 			graph.addNode(label.toString());
+			graph.getNode(label.toString()).addAttribute("ui.class", "community");
+			
+			// Position the community node
+			GraphicNode gn = viewer.getGraphicGraph().getNode(position);
+			Double positionX = gn.getX();
+			Double positionY = gn.getY();
+			
+			graph.getNode(label.toString()).addAttribute("x", positionX);
+			graph.getNode(label.toString()).addAttribute("y", positionY);
 		}
 		
 		// Add edges between vertices 
@@ -125,74 +207,9 @@ public class GraphVisualization {
 					} 				
 				}
 			}		
-		}
+		}	
 	
-		for (Edge e : graph.getEachEdge()) {
-			e.addAttribute("ui.class", "community");
-		}
 		
-		for (org.graphstream.graph.Node n : graph) {
-			n.addAttribute("ui.class", "community");
-		}
-		
-		
-		/**
-		 * Create the network of individual resources
-		 */
-		
-		// Get the resources
-		Set<String> resources = new HashSet<>();
-		
-		for (ResourcesPair rp : network.keySet()) {
-			String resourceA = rp.getResourceA();
-			String resourceB = rp.getResourceB();
-
-			if (!resources.contains(resourceA)) {
-				resources.add(resourceA);
-			}
-			
-			if (!resources.contains(resourceB)) {
-				resources.add(resourceB);
-			}
-		}
-		
-		// Add the resources as vertices in the network				
-		for (String resource : resources) {
-			graph.addNode(resource);
-			graph.getNode(resource).addAttribute("ui.class", "individual");
-		}
-		
-		// Add edges between vertices 
-		if (graphType == Type.UNDIRECTED) { // Create undirected edges
-			for (String resourceA : resources) {
-				for (String resourceB : resources) {
-					ResourcesPair rp = new ResourcesPair(resourceA, resourceB);
-				
-					if (network.contains(rp) && graph.getEdge(resourceB + "-" + resourceA) == null) {
-						graph.addEdge(resourceA + "-" + resourceB, resourceA, resourceB);
-						graph.getEdge(resourceA + "-" + resourceB).addAttribute("ui.class", "individual");
-					} 				
-				}
-			}
-		} else { // Create directed edges
-			for (String resourceA : resources) {
-				for (String resourceB : resources) {
-					ResourcesPair rp = new ResourcesPair(resourceA, resourceB);
-				
-					if (network.contains(rp)) {
-						graph.addEdge(resourceA + "-" + resourceB, resourceA, resourceB, true);
-						graph.getEdge(resourceA + "-" + resourceB).addAttribute("ui.class", "individual");
-					} 				
-				}
-			}		
-		}
-		
-		for (org.graphstream.graph.Node node : graph) {
-			// Add names to the nodes
-	        node.addAttribute("ui.label", node.getId());
-	        
-	    }
-
 		// Graph visualization options
 		graph.addAttribute("ui.stylesheet", 
 				"	node.individual {"
@@ -201,19 +218,41 @@ public class GraphVisualization {
 				+ "		text-background-mode: rounded-box;"
 				+ "		text-alignment: at-right;"
 				+ "		text-size: 14px;"
-				+ "		visibility-mode: normal;}"
+				+ "		visibility: 1.05;"
+				+ "		visibility-mode: under-zoom;}"
 				+ " edge.individual {"
-				+ "		visibility-mode: normal;}"
+				+ "		visibility: 1.05;"
+				+ "		visibility-mode: under-zoom;}"
 				+ " node.community {"
 				+ "		fill-color: green;"
 				+ "		size: 20px, 20px;"
 				+ "		text-mode: hidden;"
-				+ "		visibility-mode: normal;}"
+				+ "		visibility: 0.95;"
+				+ "		visibility-mode: over-zoom;}"
 				+ " edge.community {"
-				+ "		visibility-mode: normal;}");
+				+ "		visibility: 0.95;"
+				+ "		visibility-mode: over-zoom;}");
 		
 		
 		return graph;
+	}
+	
+	public static void computeLayout(Graph g, Layout layout) {
+		GraphReplay r = new GraphReplay(g.getId());
+
+		layout.addAttributeSink(g);
+		r.addSink(layout);
+		r.replay(g);
+		r.removeSink(layout);
+
+		layout.shake();
+		layout.compute();
+
+		do
+			layout.compute();
+		while (layout.getStabilization() < 1);
+		
+		layout.removeAttributeSink(g);
 	}
 
 }
