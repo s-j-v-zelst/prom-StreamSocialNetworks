@@ -3,10 +3,18 @@ package org.processmining.streamsocialnetworks.louvain.visualizers;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Random;
 
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.stream.GraphReplay;
+import org.graphstream.ui.graphicGraph.GraphicNode;
+import org.graphstream.ui.layout.Layout;
+import org.graphstream.ui.layout.springbox.implementations.SpringBox;
+import org.graphstream.ui.swingViewer.ViewPanel;
+import org.graphstream.ui.view.Camera;
+import org.graphstream.ui.view.Viewer;
 import org.processmining.streamsocialnetworks.louvain.LSocialNetwork;
 import org.processmining.streamsocialnetworks.louvain.LSocialNetworkClustered;
 import org.processmining.streamsocialnetworks.louvain.Node;
@@ -29,116 +37,32 @@ public class GraphVisualization {
 	public static Graph createGraph(Type graphType, LSocialNetwork network) {
 		System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
 		Graph graph = new SingleGraph("Graph");
+		Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
 		
 		// Compute communities
 		LouvainWorkingTogetherNetwork clustering = new LouvainWorkingTogetherNetwork();
-		LSocialNetworkClustered networkClustered =  clustering.louvain(network);
+		LSocialNetworkClustered networkClustered =  clustering.louvain(network);	
 		
-		/**
-		 * Create the network of communities
-		 */
-		
-		// Get the nodes
-		Set<Node> nodes = new HashSet<>();
+		// Get the communities 
+		Set<Node> communities = new HashSet<>();
 		
 		for (NodesPair np : networkClustered.keySet()) {
 			Node nodeA = np.getNodeA();
 			Node nodeB = np.getNodeB();
 
-			if (!nodes.contains(nodeA)) {
-				nodes.add(nodeA);
+			if (!communities.contains(nodeA)) {
+				communities.add(nodeA);
 			}
 			
-			if (!nodes.contains(nodeB)) {
-				nodes.add(nodeB);
+			if (!communities.contains(nodeB)) {
+				communities.add(nodeB);
 			}
-		}
-		
-		// Add the nodes as vertices in the network				
-		for (Node n : nodes) {
-			Set<String> community = n.getResources();
-			
-			StringBuilder label = new StringBuilder();
-			
-			for (String resource : community) {
-				label.append(resource);
-				label.append("-");
-			}
-			
-			graph.addNode(label.toString());
-		}
-		
-		// Add edges between vertices 
-		if (graphType == Type.UNDIRECTED) { // Create undirected edges
-			for (Node nodeA : nodes) {
-				for (Node nodeB : nodes) {
-					NodesPair np = new NodesPair(nodeA, nodeB);
-				
-					// Get resources of A
-					StringBuilder resourcesNodeA = new StringBuilder();
-					Set<String> communityA = nodeA.getResources();
-					
-					for (String resource : communityA) {
-						resourcesNodeA.append(resource + "-");
-					}
-					
-					// Get resources of B
-					StringBuilder resourcesNodeB = new StringBuilder();
-					Set<String> communityB = nodeB.getResources();
-					
-					for (String resource : communityB) {
-						resourcesNodeB.append(resource + "-");
-					}
-					
-					if (networkClustered.contains(np) && graph.getEdge(resourcesNodeB.toString() + "-" + resourcesNodeA.toString()) == null) {
-						graph.addEdge(resourcesNodeA.toString() + "-" + resourcesNodeB.toString(), 
-								resourcesNodeA.toString(), resourcesNodeB.toString());
-						graph.getEdge(resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.class", "community");
-					} 				
-				}
-			}
-		} else { // Create directed edges
-			for (Node nodeA : nodes) {
-				for (Node nodeB : nodes) {
-					NodesPair np = new NodesPair(nodeA, nodeB);
-					
-					// Get resources of A
-					StringBuilder resourcesNodeA = new StringBuilder();
-					Set<String> communityA = nodeA.getResources();
-					
-					for (String resource : communityA) {
-						resourcesNodeA.append(resource + "-");
-					}
-					
-					// Get resources of B
-					StringBuilder resourcesNodeB = new StringBuilder();
-					Set<String> communityB = nodeB.getResources();
-					
-					for (String resource : communityB) {
-						resourcesNodeB.append(resource + "-");
-					}
-				
-					if (networkClustered.contains(np)) {
-						graph.addEdge(resourcesNodeA.toString() + "-" + resourcesNodeB.toString(), 
-								resourcesNodeA.toString(), resourcesNodeB.toString(), true);
-						graph.getEdge(resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.class", "community");
-					} 				
-				}
-			}		
-		}
-	
-		for (Edge e : graph.getEachEdge()) {
-			e.addAttribute("ui.class", "community");
-		}
-		
-		for (org.graphstream.graph.Node n : graph) {
-			n.addAttribute("ui.class", "community");
 		}
 		
 		
 		/**
 		 * Create the network of individual resources
-		 */
+		 */	
 		
 		// Get the resources
 		Set<String> resources = new HashSet<>();
@@ -156,7 +80,7 @@ public class GraphVisualization {
 			}
 		}
 		
-		// Add the resources as vertices in the network				
+		// Add the resources as vertices in the network			
 		for (String resource : resources) {
 			graph.addNode(resource);
 			graph.getNode(resource).addAttribute("ui.class", "individual");
@@ -189,31 +113,201 @@ public class GraphVisualization {
 		
 		for (org.graphstream.graph.Node node : graph) {
 			// Add names to the nodes
-	        node.addAttribute("ui.label", node.getId());
-	        
+	        node.addAttribute("ui.label", node.getId());	        
 	    }
-
+		
+		// Compute the layout
+		Layout layout = new SpringBox(false);;
+		computeLayout(graph, layout);
+				
+		// Cluster the resources of the same community 
+		for (Node n : communities) {
+			Set<String> community = n.getResources();
+			
+			String centreResource = null;
+			for (String resource : community) {
+				
+				if (centreResource != null) {
+					GraphicNode gn = viewer.getGraphicGraph().getNode(centreResource);
+					Double positionX = gn.getX();
+					Double positionY = gn.getY();
+					
+					Random randP = new Random();
+					graph.getNode(resource).setAttribute("x", positionX + randP.nextDouble());
+					graph.getNode(resource).setAttribute("y", positionY + randP.nextDouble());
+				}
+				
+				if (centreResource == null) {
+					centreResource = resource;
+					
+					GraphicNode gn = viewer.getGraphicGraph().getNode(centreResource);
+					Double positionX = gn.getX();
+					Double positionY = gn.getY();
+					
+					Random randP = new Random();
+					graph.getNode(centreResource).setAttribute("x", positionX + randP.nextDouble());
+					graph.getNode(centreResource).setAttribute("y", positionY + randP.nextDouble());
+				}
+			}
+			
+			// Recompute the layout
+			Layout layoutRecomputed = new SpringBox(false);;
+			computeLayout(graph, layoutRecomputed);
+		}
+		
+		
+		
+		/**
+		 * Create the network of communities
+		 */
+		
+		// Add the nodes as vertices in the network				
+		for (Node n : communities) {
+			Set<String> community = n.getResources();
+			
+			StringBuilder label = new StringBuilder();
+			
+			// Position of one of the resources in the community
+			String position = null; 
+			
+			// Color of the community
+			Random rand = new Random();
+			String rgb = "rgb("+ rand.nextInt(255) +", "+ rand.nextInt(255) +", "+ rand.nextInt(255) + ")"; 
+			
+			for (String resource : community) {
+				label.append(resource);
+				label.append("-");
+				
+				// Get the position of one of the resources in the community 
+				if (position == null) {
+					position = resource;
+				}
+				
+				// Give same color to the resources in the community
+				graph.getNode(resource).addAttribute("ui.style", "fill-color:" + rgb + ";");
+			}
+			
+			graph.addNode(label.toString());
+			graph.getNode(label.toString()).addAttribute("ui.class", "community");
+			graph.getNode(label.toString()).addAttribute("ui.style", "fill-color:" + rgb + ";");
+			
+			// Position the community node
+			GraphicNode gn = viewer.getGraphicGraph().getNode(position);
+			Double positionX = gn.getX();
+			Double positionY = gn.getY();
+			
+			graph.getNode(label.toString()).addAttribute("x", positionX);
+			graph.getNode(label.toString()).addAttribute("y", positionY);
+		}
+		
+		// Add edges between vertices 
+		if (graphType == Type.UNDIRECTED) { // Create undirected edges
+			for (Node nodeA : communities) {
+				for (Node nodeB : communities) {
+					NodesPair np = new NodesPair(nodeA, nodeB);
+				
+					// Get resources of A
+					StringBuilder resourcesNodeA = new StringBuilder();
+					Set<String> communityA = nodeA.getResources();
+					
+					for (String resource : communityA) {
+						resourcesNodeA.append(resource + "-");
+					}
+					
+					// Get resources of B
+					StringBuilder resourcesNodeB = new StringBuilder();
+					Set<String> communityB = nodeB.getResources();
+					
+					for (String resource : communityB) {
+						resourcesNodeB.append(resource + "-");
+					}
+					
+					if (networkClustered.contains(np) && graph.getEdge(resourcesNodeB.toString() + "-" + resourcesNodeA.toString()) == null) {
+						graph.addEdge(resourcesNodeA.toString() + "-" + resourcesNodeB.toString(), 
+								resourcesNodeA.toString(), resourcesNodeB.toString());
+						graph.getEdge(resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.class", "community");
+					
+						// Label the edge
+						String label = new Double(networkClustered.get(np)).toString();
+						graph.getEdge(resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.label", label);
+					} 				
+				}
+			}
+		} else { // Create directed edges
+			for (Node nodeA : communities) {
+				for (Node nodeB : communities) {
+					NodesPair np = new NodesPair(nodeA, nodeB);
+					
+					// Get resources of A
+					StringBuilder resourcesNodeA = new StringBuilder();
+					Set<String> communityA = nodeA.getResources();
+					
+					for (String resource : communityA) {
+						resourcesNodeA.append(resource + "-");
+					}
+					
+					// Get resources of B
+					StringBuilder resourcesNodeB = new StringBuilder();
+					Set<String> communityB = nodeB.getResources();
+					
+					for (String resource : communityB) {
+						resourcesNodeB.append(resource + "-");
+					}
+				
+					if (networkClustered.contains(np)) {
+						graph.addEdge(resourcesNodeA.toString() + "-" + resourcesNodeB.toString(), 
+								resourcesNodeA.toString(), resourcesNodeB.toString(), true);
+						graph.getEdge(resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.class", "community");
+					
+						// Label the edge
+						String label = new Double(networkClustered.get(np)).toString();
+						graph.getEdge(resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.label", label);
+					} 				
+				}
+			}		
+		}	
+		
 		// Graph visualization options
 		graph.addAttribute("ui.stylesheet", 
 				"	node.individual {"
-				+ "		fill-color: rgb(181, 0, 15);"
 				+ "		size: 15px, 15px;"
 				+ "		text-background-mode: rounded-box;"
 				+ "		text-alignment: at-right;"
 				+ "		text-size: 14px;"
-				+ "		visibility-mode: normal;}"
+				+ "		visibility: 1;"
+				+ "		visibility-mode: under-zoom;}"
 				+ " edge.individual {"
-				+ "		visibility-mode: normal;}"
+				+ "		visibility: 1;"
+				+ "		visibility-mode: under-zoom;}"
 				+ " node.community {"
-				+ "		fill-color: green;"
 				+ "		size: 20px, 20px;"
 				+ "		text-mode: hidden;"
-				+ "		visibility-mode: normal;}"
+				+ "		visibility: 1;"
+				+ "		visibility-mode: over-zoom;}"
 				+ " edge.community {"
-				+ "		visibility-mode: normal;}");
-		
+				+ "		visibility: 1;"
+				+ "		visibility-mode: over-zoom;"
+				+ "		text-visibility-mode: hidden;}");
 		
 		return graph;
+	}
+	
+	public static void computeLayout(Graph g, Layout layout) {
+		GraphReplay r = new GraphReplay(g.getId());
+
+		layout.addAttributeSink(g);
+		r.addSink(layout);
+		r.replay(g);
+		r.removeSink(layout);
+
+		layout.shake();
+		layout.compute();
+
+		while (layout.getStabilization() < 1) {
+			layout.compute();
+		}
+		
+		layout.removeAttributeSink(g);
 	}
 
 }

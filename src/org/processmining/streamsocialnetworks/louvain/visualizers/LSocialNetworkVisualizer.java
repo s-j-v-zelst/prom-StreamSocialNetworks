@@ -11,6 +11,7 @@ import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.swingViewer.ViewPanel;
+import org.graphstream.ui.view.Camera;
 import org.graphstream.ui.view.Viewer;
 import org.graphstream.ui.view.ViewerListener;
 import org.graphstream.ui.view.ViewerPipe;
@@ -61,12 +62,21 @@ public class LSocialNetworkVisualizer {
 		}
 		
 		Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+		viewer.disableAutoLayout();
+		
 		ViewPanel viewPanel = viewer.addDefaultView(false);
 		viewPanel.setOpaque(false);
-
+		
+		// Graph not in center of view
+		// Camera camera = viewPanel.getCamera();
+		// camera.setViewPercent(1.05);
+		
+		// Initially everything visible
+		// viewPanel.getCamera();
+		
 		panel.setLayout(new BorderLayout());
         panel.add(viewPanel, BorderLayout.CENTER);
-        viewer.enableAutoLayout();
+        
 
 		return panel;
 	}
