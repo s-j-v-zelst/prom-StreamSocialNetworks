@@ -48,7 +48,7 @@ public class GraphVisualization {
 		
 		for (NodesPair np : networkClustered.keySet()) {
 			Node nodeA = np.getNodeA();
-			Node nodeB = np.getNodeB();
+			Node nodeB = np.getNodeB(); 
 
 			if (!communities.contains(nodeA)) {
 				communities.add(nodeA);
@@ -267,12 +267,12 @@ public class GraphVisualization {
 				+ "		text-background-mode: rounded-box;"
 				+ "		text-alignment: at-right;"
 				+ "		text-size: 14px;"
-				+ "		visibility: 0.75;"
+				+ "		visibility: 1;"
 				+ "		visibility-mode: under-zoom;}"
 				+ " node.community {"
 				+ "		size: 25px, 25px;"
 				+ "		text-mode: hidden;"
-				+ "		visibility: 0.75;"
+				+ "		visibility: 1;"
 				+ "		visibility-mode: over-zoom;}"
 				+ " node:selected {"
 				+ "		text-mode: normal;"
@@ -280,10 +280,10 @@ public class GraphVisualization {
 				+ "		text-alignment: at-right;"
 				+ "		text-size: 14px;}"
 				+ " edge.individual {"
-				+ "		visibility: 0.75;"
+				+ "		visibility: 1;"
 				+ "		visibility-mode: under-zoom;}"
 				+ " edge.community {"
-				+ "		visibility: 0.75;"
+				+ "		visibility: 1;"
 				+ "		visibility-mode: over-zoom;"
 				+ "		text-visibility-mode: hidden;}"
 				+ " edge.invisible {"
