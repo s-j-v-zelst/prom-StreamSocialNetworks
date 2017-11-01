@@ -64,11 +64,9 @@ public class LSocialNetworkVisualizer {
 		ViewPanel viewPanel = viewer.addDefaultView(false);
 		viewPanel.setOpaque(false);
 
-		viewPanel.getCamera();
-		
 		panel.setLayout(new BorderLayout());
         panel.add(viewPanel, BorderLayout.CENTER);
-        viewer.disableAutoLayout();
+        viewer.enableAutoLayout();
 
 		return panel;
 	}
