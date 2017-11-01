@@ -136,7 +136,7 @@ public class GraphVisualization {
 			
 			for (String resource : community) {
 				label.append(resource);
-				label.append("-");
+				label.append(", ");
 				
 				// Give same color to the resources in the community
 				graph.getNode(resource).addAttribute("ui.style", "fill-color:" + rgb + ";");
@@ -167,6 +167,11 @@ public class GraphVisualization {
 			graph.getNode(label.toString()).addAttribute("ui.class", "community");
 			graph.getNode(label.toString()).addAttribute("ui.style", "fill-color:" + rgb + ";");
 						
+			// Add text to the community node
+			int communitySize = community.size();
+			String resourceLabel = "#resources " + communitySize + ": "+ label.toString().substring(0, label.toString().length() - 2);
+			graph.getNode(label.toString()).addAttribute("ui.label", resourceLabel);
+			
 			// Position the community node
 			gn = viewer.getGraphicGraph().getNode(centerResource);
 			positionX = gn.getX();
@@ -199,7 +204,7 @@ public class GraphVisualization {
 					Set<String> communityA = nodeA.getResources();
 					
 					for (String resource : communityA) {
-						resourcesNodeA.append(resource + "-");
+						resourcesNodeA.append(resource + ", ");
 					}
 					
 					// Get resources of B
@@ -207,7 +212,7 @@ public class GraphVisualization {
 					Set<String> communityB = nodeB.getResources();
 					
 					for (String resource : communityB) {
-						resourcesNodeB.append(resource + "-");
+						resourcesNodeB.append(resource + ", ");
 					}
 					
 					if (networkClustered.contains(np) && graph.getEdge(resourcesNodeB.toString() + "-" + resourcesNodeA.toString()) == null) {
@@ -231,7 +236,7 @@ public class GraphVisualization {
 					Set<String> communityA = nodeA.getResources();
 					
 					for (String resource : communityA) {
-						resourcesNodeA.append(resource + "-");
+						resourcesNodeA.append(resource + ", ");
 					}
 					
 					// Get resources of B
@@ -239,7 +244,7 @@ public class GraphVisualization {
 					Set<String> communityB = nodeB.getResources();
 					
 					for (String resource : communityB) {
-						resourcesNodeB.append(resource + "-");
+						resourcesNodeB.append(resource + ", ");
 					}
 				
 					if (networkClustered.contains(np)) {
@@ -262,18 +267,23 @@ public class GraphVisualization {
 				+ "		text-background-mode: rounded-box;"
 				+ "		text-alignment: at-right;"
 				+ "		text-size: 14px;"
-				+ "		visibility: 1;"
-				+ "		visibility-mode: under-zoom;}"
-				+ " edge.individual {"
-				+ "		visibility: 1;"
+				+ "		visibility: 0.75;"
 				+ "		visibility-mode: under-zoom;}"
 				+ " node.community {"
-				+ "		size: 20px, 20px;"
+				+ "		size: 25px, 25px;"
 				+ "		text-mode: hidden;"
-				+ "		visibility: 1;"
+				+ "		visibility: 0.75;"
 				+ "		visibility-mode: over-zoom;}"
+				+ " node:selected {"
+				+ "		text-mode: normal;"
+				+ "		text-background-mode: rounded-box;"
+				+ "		text-alignment: at-right;"
+				+ "		text-size: 14px;}"
+				+ " edge.individual {"
+				+ "		visibility: 0.75;"
+				+ "		visibility-mode: under-zoom;}"
 				+ " edge.community {"
-				+ "		visibility: 1;"
+				+ "		visibility: 0.75;"
 				+ "		visibility-mode: over-zoom;"
 				+ "		text-visibility-mode: hidden;}"
 				+ " edge.invisible {"
