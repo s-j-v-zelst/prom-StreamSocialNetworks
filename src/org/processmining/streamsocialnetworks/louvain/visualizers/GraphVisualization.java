@@ -123,52 +123,12 @@ public class GraphVisualization {
 		// Cluster the resources of the same community 
 		for (Node n : communities) {
 			Set<String> community = n.getResources();
-			
-			String centreResource = null;
-			for (String resource : community) {
-				
-				if (centreResource != null) {
-					GraphicNode gn = viewer.getGraphicGraph().getNode(centreResource);
-					Double positionX = gn.getX();
-					Double positionY = gn.getY();
-					
-					Random randP = new Random();
-					graph.getNode(resource).setAttribute("x", positionX + randP.nextDouble());
-					graph.getNode(resource).setAttribute("y", positionY + randP.nextDouble());
-				}
-				
-				if (centreResource == null) {
-					centreResource = resource;
-					
-					GraphicNode gn = viewer.getGraphicGraph().getNode(centreResource);
-					Double positionX = gn.getX();
-					Double positionY = gn.getY();
-					
-					Random randP = new Random();
-					graph.getNode(centreResource).setAttribute("x", positionX + randP.nextDouble());
-					graph.getNode(centreResource).setAttribute("y", positionY + randP.nextDouble());
-				}
-			}
-			
-			// Recompute the layout
-			Layout layoutRecomputed = new SpringBox(false);;
-			computeLayout(graph, layoutRecomputed);
-		}
-		
-		
-		
-		/**
-		 * Create the network of communities
-		 */
-		
-		// Add the nodes as vertices in the network				
-		for (Node n : communities) {
-			Set<String> community = n.getResources();
-			
 			StringBuilder label = new StringBuilder();
+			String centerResource = null;
 			
-			// Position of one of the resources in the community
-			String position = null; 
+			GraphicNode gn;
+			Double positionX;
+			Double positionY;
 			
 			// Color of the community
 			Random rand = new Random();
@@ -178,27 +138,55 @@ public class GraphVisualization {
 				label.append(resource);
 				label.append("-");
 				
-				// Get the position of one of the resources in the community 
-				if (position == null) {
-					position = resource;
-				}
-				
 				// Give same color to the resources in the community
 				graph.getNode(resource).addAttribute("ui.style", "fill-color:" + rgb + ";");
+		
+				if (centerResource != null) {
+					gn = viewer.getGraphicGraph().getNode(centerResource);
+					positionX = gn.getX();
+					positionY = gn.getY();
+					
+					graph.getNode(resource).setAttribute("x", positionX + rand.nextDouble());
+					graph.getNode(resource).setAttribute("y", positionY + rand.nextDouble());
+				}
+				
+				if (centerResource == null) {
+					centerResource = resource;
+					
+					gn = viewer.getGraphicGraph().getNode(centerResource);
+					positionX = gn.getX();
+					positionY = gn.getY();
+				
+					graph.getNode(centerResource).setAttribute("x", positionX + rand.nextDouble());
+					graph.getNode(centerResource).setAttribute("y", positionY + rand.nextDouble());
+				}
 			}
 			
+			// Add the community node
 			graph.addNode(label.toString());
 			graph.getNode(label.toString()).addAttribute("ui.class", "community");
 			graph.getNode(label.toString()).addAttribute("ui.style", "fill-color:" + rgb + ";");
-			
+						
 			// Position the community node
-			GraphicNode gn = viewer.getGraphicGraph().getNode(position);
-			Double positionX = gn.getX();
-			Double positionY = gn.getY();
+			gn = viewer.getGraphicGraph().getNode(centerResource);
+			positionX = gn.getX();
+			positionY = gn.getY();
 			
-			graph.getNode(label.toString()).addAttribute("x", positionX);
-			graph.getNode(label.toString()).addAttribute("y", positionY);
-		}
+			graph.getNode(label.toString()).setAttribute("x", positionX);
+			graph.getNode(label.toString()).setAttribute("y", positionY);	
+			
+			// Add invisible edge from community node to center resource to improve placement
+			graph.addEdge("x" + label.toString(), label.toString(), centerResource);
+			graph.getEdge("x" + label.toString()).addAttribute("ui.class", "invisible");
+			
+			// Recompute the layout
+			Layout layoutRecomputed = new SpringBox(false);;
+			computeLayout(graph, layoutRecomputed);	
+		}	
+		
+		/**
+		 * Add the edges in the network of communities
+		 */
 		
 		// Add edges between vertices 
 		if (graphType == Type.UNDIRECTED) { // Create undirected edges
@@ -287,7 +275,9 @@ public class GraphVisualization {
 				+ " edge.community {"
 				+ "		visibility: 1;"
 				+ "		visibility-mode: over-zoom;"
-				+ "		text-visibility-mode: hidden;}");
+				+ "		text-visibility-mode: hidden;}"
+				+ " edge.invisible {"
+				+ "		visibility-mode: hidden;}");
 		
 		return graph;
 	}
