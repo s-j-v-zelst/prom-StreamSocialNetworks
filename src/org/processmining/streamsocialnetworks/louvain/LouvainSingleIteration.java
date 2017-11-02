@@ -13,81 +13,25 @@ import org.processmining.streamsocialnetworks.util.XESImporter;
 import gnu.trove.map.TObjectDoubleMap;
 import gnu.trove.map.hash.TObjectDoubleHashMap;
 
-public class Louvain {
+public class LouvainSingleIteration {
 	boolean stop;
 	
 	/**
 	 * Determines the communities with the highest modularity gain with the use of Louvain
 	 */
-	public TObjectDoubleMap<NodesPair> louvain(TObjectDoubleMap<ResourcesPair> network) {			
-		// Initialize the network consisting of nodes in which each node is a community of one or several resources
-		TObjectDoubleMap<NodesPair> communityNetwork = initializeNetwork(network);
-		
+	public TObjectDoubleMap<NodesPair> louvain(TObjectDoubleMap<NodesPair> communityNetwork) {			
 		// Get the set of nodes
 		Set<Node> nodes = new HashSet<>();
 		nodes = getNodesOfNetwork(communityNetwork);
 		
 		// The set of communities 
 		Set<Set<Node>> communities = new HashSet<>();
-		
-		int hierarchy = 0;
-		// Iterate over the two phases of the algorithm. 		
-		while (!stop) {
-			// The community network at the start of the iteration
-			TObjectDoubleMap<NodesPair> communityNetworkStart = communityNetwork;
 			
-			// Get the communities of the nodes
-			communities = optimization(communityNetwork, nodes);
-			// Build a new network based on the found communities
-			communityNetwork = aggregation(communityNetwork, communities);
+		// Get the communities of the nodes
+		communities = optimization(communityNetwork, nodes);
+		// Build a new network based on the found communities
+		communityNetwork = aggregation(communityNetwork, communities);
  
-			// Get the set of nodes of the new network
-			nodes = getNodesOfNetwork(communityNetwork);	
-			
-			// The community network at the end of the iteration
-			TObjectDoubleMap<NodesPair> communityNetworkEnd = communityNetwork;
-			
-			if (communityNetworkStart.equals(communityNetworkEnd)) {
-				stop = true;
-				break;
-			}
-			
-			
-			// PRINT COMMUNUNTIES
-			System.out.println("hierarchy: " + hierarchy);
-			Set<Node> communitiesX = new HashSet<>();
-			
-			for (NodesPair np : communityNetwork.keySet()) {		
-				Node nodeA = np.getNodeA();
-				Node nodeB = np.getNodeB();
-				
-				if (!communitiesX.contains(nodeA)) {
-					communitiesX.add(nodeA);
-				}
-				
-				if (!communitiesX.contains(nodeB)) {
-					communitiesX.add(nodeB);
-				}
-			}
-			
-			System.out.println("communities " + communitiesX.size());
-			System.out.println("communitiesPair " + communityNetwork.keySet().size());
-			
-			
-			// What are the communities?
-			for (Node node : communitiesX) {
-				Set<String> resourcesInCommunity = node.getResources();
-				
-				System.out.println("Community consists of resources: ");
-				for (String r : resourcesInCommunity) {
-					System.out.println(r);
-				}
-			}
-			
-			hierarchy = hierarchy + 1;
-		}
-		
-		System.out.println("hierarchy " + hierarchy);
 		return communityNetwork;	
 	}
 	
@@ -406,79 +350,5 @@ public class Louvain {
 		}
 		
 		return community;
-	}
-	
-	public static void main(final String[] args) {
-		XLog bpiLog = XESImporter.importXLog(new File("C:\\Users\\s145283\\Desktop\\2IMI05 - Capita Selecta\\BPI_Challenge_2012.xes"));
-		
-		// Choose a network type
-		WorkingTogetherNetwork network = new WorkingTogetherNetwork(bpiLog);
-		//SimilarTaskNetwork network = new SimilarTaskNetwork(bpiLog);
-		//HandoverOfWorkNetwork network = new HandoverOfWorkNetwork(bpiLog);
-		
-		// Compute the values of the network
-		TObjectDoubleMap<ResourcesPair> workingTogetherNetwork = network.computeNetwork();
-		//TObjectDoubleMap<ResourcesPair> similarTaskNetwork = network.computeNetwork();
-		//TObjectDoubleMap<ResourcesPair> handoverOfWorkNetwork = network.computeNetwork();
-		
-		// Detect communities for the network
-		Louvain communityDetection = new Louvain();
-		TObjectDoubleMap<NodesPair> communityNetwork = communityDetection.louvain(workingTogetherNetwork);
-		//TObjectDoubleMap<NodesPair> communityNetwork = communityDetection.louvain(similarTaskNetwork);
-		//TObjectDoubleMap<NodesPair> communityNetwork = communityDetection.louvain(handoverOfWorkNetwork);
-		
-		// How many number of resources?
-		Set<String> resources = new HashSet<>();
-		
-		for (ResourcesPair rp : workingTogetherNetwork.keySet()) {	
-		//for (ResourcesPair rp : similarTaskNetwork.keySet()) {	
-		//for (ResourcesPair rp : handoverOfWorkNetwork.keySet()) {		
-			String resourceA = rp.getResourceA();
-			String resourceB = rp.getResourceB();
-			
-			if (!resources.contains(resourceA)) {
-				resources.add(resourceA);
-			}
-			
-			if (!resources.contains(resourceB)) {
-				resources.add(resourceB);
-			}
-		}
-		
-		//System.out.println("resources " + resources.size());
-		//System.out.println("resourcesPair " + workingTogetherNetwork.keySet().size());
-		//System.out.println("resourcesPair " + similarTaskNetwork.keySet().size());
-		//System.out.println("resourcesPair " + handoverOfWorkNetwork.keySet().size());
-		
-		// How many number of communities? -- each node in the community network is represents a community
-		Set<Node> communities = new HashSet<>();
-		
-		for (NodesPair np : communityNetwork.keySet()) {		
-			Node nodeA = np.getNodeA();
-			Node nodeB = np.getNodeB();
-			
-			if (!communities.contains(nodeA)) {
-				communities.add(nodeA);
-			}
-			
-			if (!communities.contains(nodeB)) {
-				communities.add(nodeB);
-			}
-		}
-		
-		//System.out.println("communities " + communities.size());
-		//System.out.println("communitiesPair " + communityNetwork.keySet().size());
-		
-		
-		// What are the communities?
-		for (Node node : communities) {
-			Set<String> resourcesInCommunity = node.getResources();
-			
-			//System.out.println("Community consists of resources: ");
-			for (String r : resourcesInCommunity) {
-				//System.out.println(r);
-			}
-		}
-		
 	}
 }
