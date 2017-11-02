@@ -201,17 +201,6 @@ public class GraphVisualization {
 			for (int i = 0; i < communitiesLevel.size(); i++) {
 				Set<Node> level = communitiesLevel.get(i);
 				
-				System.out.println("level: " + i);
-				for (Node nodeX : level) {
-					System.out.println("Community consists of:");
-					
-					for (String resourceX : nodeX.getResources()) {
-						System.out.println(resourceX);
-					}
-					
-				}
-				
-				
 				for (Node node : level) {
 					Set<String> individualResources = node.getResources();
 					boolean nodeInCommunity = false;
@@ -228,15 +217,17 @@ public class GraphVisualization {
 					// Only add corresponding community nodes in higher levels
 					if (nodeInCommunity == true) {
 						for (String resource : individualResources) {
-							label.append(resource);
-							label.append(", ");
+							label.append(resource + ", ");
 						}
 						
-						System.out.println("add node at level " + i + ":" + label.toString());
 						// Add the community node
 						graph.addNode(i + label.toString());
 						graph.getNode(i + label.toString()).addAttribute("ui.class", "community");
-						graph.getNode(i + label.toString()).addAttribute("ui.style", "fill-color:" + rgb + ";");
+						
+						// Specify color and visibility of the community node
+						double zoomLow = 1 + ((double) i * 3 / (double) clusterLevel.size());
+						double zoomHigh = 1 + ((double) i * 3 / (double) clusterLevel.size()) + (3 / (double) clusterLevel.size());			
+						graph.getNode(i + label.toString()).addAttribute("ui.style", "fill-color:" + rgb + "; visibility: " + zoomLow + "," + zoomHigh + ";");
 						
 						// Add text to the community node
 						int communitySize = individualResources.size();
@@ -270,74 +261,95 @@ public class GraphVisualization {
 		 * Add the edges in the network of communities
 		 */
 		
-		/*
-		// Add edges between vertices 
-		if (graphType == Type.UNDIRECTED) { // Create undirected edges
-			for (Node nodeA : communitiesLevel.get(0)) {
-				for (Node nodeB : communitiesLevel.get(0)) {
-					NodesPair np = new NodesPair(nodeA, nodeB);
+		// Create undirected edges
+		if (graphType == Type.UNDIRECTED) { 
+			// Edges between nodes in each level
+			for (int i = 0; i < communitiesLevel.size(); i++) {
+				// All nodes at level i
+				Set<Node> level = communitiesLevel.get(i);
 				
-					// Get resources of A
-					StringBuilder resourcesNodeA = new StringBuilder();
-					Set<String> communityA = nodeA.getResources();
+				for (Node nodeA : level) {
+					for (Node nodeB : level) {
+						NodesPair np = new NodesPair(nodeA, nodeB);
 					
-					for (String resource : communityA) {
-						resourcesNodeA.append(resource + ", ");
+						// Get resources of A
+						StringBuilder resourcesNodeA = new StringBuilder();
+						Set<String> communityA = nodeA.getResources();
+						
+						for (String resource : communityA) {
+							resourcesNodeA.append(resource + ", ");
+						}
+						
+						// Get resources of B
+						StringBuilder resourcesNodeB = new StringBuilder();
+						Set<String> communityB = nodeB.getResources();
+						
+						for (String resource : communityB) {
+							resourcesNodeB.append(resource + ", ");
+						}
+						
+						if (clusterLevel.get(i).containsKey(np) && graph.getEdge(i + resourcesNodeB.toString() + "-" + resourcesNodeA.toString()) == null) {
+							graph.addEdge(i + resourcesNodeA.toString() + "-" + resourcesNodeB.toString(), 
+									i + resourcesNodeA.toString(), i + resourcesNodeB.toString());
+							graph.getEdge(i + resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.class", "community");
+							
+							// Specify visibility of the edge
+							double zoomLow = 1 + ((double) i * 3 / (double) clusterLevel.size());
+							double zoomHigh = 1 + ((double) i * 3 / (double) clusterLevel.size()) + (3 / (double) clusterLevel.size());			
+							graph.getEdge(i + resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.style", "visibility: " + zoomLow + "," + zoomHigh + ";");
+						
+							// Label the edge
+							String label = new Double(clusterLevel.get(i).get(np)).toString();
+							graph.getEdge(i + resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.label", label);
+						} 				
 					}
-					
-					// Get resources of B
-					StringBuilder resourcesNodeB = new StringBuilder();
-					Set<String> communityB = nodeB.getResources();
-					
-					for (String resource : communityB) {
-						resourcesNodeB.append(resource + ", ");
-					}
-					
-					if (clusterLevel.get(0).containsKey(np) && graph.getEdge(resourcesNodeB.toString() + "-" + resourcesNodeA.toString()) == null) {
-						graph.addEdge(resourcesNodeA.toString() + "-" + resourcesNodeB.toString(), 
-								resourcesNodeA.toString(), resourcesNodeB.toString());
-						graph.getEdge(resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.class", "community");
-					
-						// Label the edge
-						String label = new Double(clusterLevel.get(0).get(np)).toString();
-						graph.getEdge(resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.label", label);
-					} 				
 				}
 			}
 		} else { // Create directed edges
-			for (Node nodeA : communitiesLevel.get(0)) {
-				for (Node nodeB : communitiesLevel.get(0)) {
-					NodesPair np = new NodesPair(nodeA, nodeB);
-					
-					// Get resources of A
-					StringBuilder resourcesNodeA = new StringBuilder();
-					Set<String> communityA = nodeA.getResources();
-					
-					for (String resource : communityA) {
-						resourcesNodeA.append(resource + ", ");
-					}
-					
-					// Get resources of B
-					StringBuilder resourcesNodeB = new StringBuilder();
-					Set<String> communityB = nodeB.getResources();
-					
-					for (String resource : communityB) {
-						resourcesNodeB.append(resource + ", ");
-					}
+			// Edges between nodes in each level
+			for (int i = 0; i < communitiesLevel.size(); i++) {
+				// All nodes at level i
+				Set<Node> level = communitiesLevel.get(i);
 				
-					if (clusterLevel.get(0).containsKey(np)) {
-						graph.addEdge(resourcesNodeA.toString() + "-" + resourcesNodeB.toString(), 
-								resourcesNodeA.toString(), resourcesNodeB.toString(), true);
-						graph.getEdge(resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.class", "community");
+				for (Node nodeA : level) {
+					for (Node nodeB : level) {
+						NodesPair np = new NodesPair(nodeA, nodeB);
+						
+						// Get resources of A
+						StringBuilder resourcesNodeA = new StringBuilder();
+						Set<String> communityA = nodeA.getResources();
+						
+						for (String resource : communityA) {
+							resourcesNodeA.append(resource + ", ");
+						}
+						
+						// Get resources of B
+						StringBuilder resourcesNodeB = new StringBuilder();
+						Set<String> communityB = nodeB.getResources();
+						
+						for (String resource : communityB) {
+							resourcesNodeB.append(resource + ", ");
+						}
 					
-						// Label the edge
-						String label = new Double(clusterLevel.get(0).get(np)).toString();
-						graph.getEdge(resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.label", label);
-					} 				
+						if (clusterLevel.get(i).containsKey(np)) {
+							graph.addEdge(i + resourcesNodeA.toString() + "-" + resourcesNodeB.toString(), 
+									i + resourcesNodeA.toString(), i + resourcesNodeB.toString(), true);
+							graph.getEdge(i + resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.class", "community");
+							
+							// Specify visibility of the edge
+							double zoomLow = 1 + ((double) i * 3 / (double) clusterLevel.size());
+							double zoomHigh = 1 + ((double) i * 3 / (double) clusterLevel.size()) + (3 / (double) clusterLevel.size());			
+							graph.getEdge(i + resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.style", "visibility: " + zoomLow + "," + zoomHigh + ";");
+						
+							// Label the edge
+							String label = new Double(clusterLevel.get(i).get(np)).toString();
+							graph.getEdge(i + resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.label", label);
+						} 				
+					}
 				}
 			}		
 		}	
-		*/
+		
 		
 		// Graph visualization options
 		graph.addAttribute("ui.stylesheet", 
@@ -351,8 +363,7 @@ public class GraphVisualization {
 				+ " node.community {"
 				+ "		size: 25px, 25px;"
 				+ "		text-mode: hidden;"
-				+ "		visibility: 1;"
-				+ "		visibility-mode: over-zoom;}"
+				+ "		visibility-mode: zoom-range;}"
 				+ " node:selected {"
 				+ "		text-mode: normal;"
 				+ "		text-background-mode: rounded-box;"
@@ -363,12 +374,12 @@ public class GraphVisualization {
 				+ "		visibility: 1;"
 				+ "		visibility-mode: under-zoom;}"
 				+ " edge.community {"
-				+ "		visibility: 1;"
-				+ "		visibility-mode: over-zoom;"
+				+ "		visibility-mode: zoom-range;"
 				+ "		text-visibility-mode: hidden;}"
 				+ ""
 				+ " edge.invisible {"
 				+ "		visibility-mode: hidden;}");
+		
 		
 		return graph;
 	}
