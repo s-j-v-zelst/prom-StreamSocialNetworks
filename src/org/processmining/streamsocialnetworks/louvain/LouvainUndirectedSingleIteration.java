@@ -13,11 +13,11 @@ import org.processmining.streamsocialnetworks.util.XESImporter;
 import gnu.trove.map.TObjectDoubleMap;
 import gnu.trove.map.hash.TObjectDoubleHashMap;
 
-public class LouvainSingleIteration {
+public class LouvainUndirectedSingleIteration {
 	boolean stop;
 	
 	/**
-	 * Determines the communities with the highest modularity gain with the use of Louvain
+	 * Determines the communities in a directed network with the use of Louvain algorithm.
 	 */
 	public TObjectDoubleMap<NodesPair> louvain(TObjectDoubleMap<NodesPair> communityNetwork) {			
 		// Get the set of nodes

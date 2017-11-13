@@ -18,7 +18,7 @@ import org.graphstream.ui.view.Camera;
 import org.graphstream.ui.view.Viewer;
 import org.processmining.streamsocialnetworks.louvain.LSocialNetwork;
 import org.processmining.streamsocialnetworks.louvain.LSocialNetworkClustered;
-import org.processmining.streamsocialnetworks.louvain.LouvainSingleIteration;
+import org.processmining.streamsocialnetworks.louvain.LouvainDirectedSingleIteration;
 import org.processmining.streamsocialnetworks.louvain.Node;
 import org.processmining.streamsocialnetworks.louvain.NodesPair;
 import org.processmining.streamsocialnetworks.louvain.ResourcesPair;
@@ -43,7 +43,7 @@ public class GraphVisualization {
 		Graph graph = new SingleGraph("Graph");
 		Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
 		
-		LouvainSingleIteration clustering = new LouvainSingleIteration();
+		LouvainDirectedSingleIteration clustering = new LouvainDirectedSingleIteration();
 	
 		// Initialize the network such that each resource is has its own community
 		TObjectDoubleMap<NodesPair> communityNetwork = clustering.initializeNetwork(network);
