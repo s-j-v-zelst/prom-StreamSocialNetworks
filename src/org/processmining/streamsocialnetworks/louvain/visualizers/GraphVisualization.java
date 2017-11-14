@@ -225,10 +225,18 @@ public class GraphVisualization {
 							zoomHigh = 100;
 						}
 						
-						graph.getNode(i + label.toString()).addAttribute("ui.style", "fill-color:" + rgb + "; visibility: " + zoomLow + "," + zoomHigh + ";");
+						// Size of the community
+						int communitySize = individualResources.size();
+						
+						if (communitySize <= 10) {
+							graph.getNode(i + label.toString()).addAttribute("ui.style", "fill-color:" + rgb + "; visibility: " + zoomLow + "," + zoomHigh + "; size: 15px, 15px;");
+						} else if (communitySize > 10 && communitySize <= 20) {
+							graph.getNode(i + label.toString()).addAttribute("ui.style", "fill-color:" + rgb + "; visibility: " + zoomLow + "," + zoomHigh + "; size: 25px, 25px;");
+						} else { // community size greater than 20
+							graph.getNode(i + label.toString()).addAttribute("ui.style", "fill-color:" + rgb + "; visibility: " + zoomLow + "," + zoomHigh + "; size: 35px, 35px;");
+						}
 						
 						// Add text to the community node
-						int communitySize = individualResources.size();
 						String resourceLabel = "#resources " + communitySize + ": " + label.toString().substring(0, label.toString().length() - 2);
 						graph.getNode(i + label.toString()).addAttribute("ui.label", resourceLabel);
 						
@@ -349,6 +357,7 @@ public class GraphVisualization {
 				}
 			}		
 		}	
+	
 		
 		
 		// Graph visualization options
@@ -361,7 +370,6 @@ public class GraphVisualization {
 				+ "		visibility: 1;"
 				+ "		visibility-mode: under-zoom;}"
 				+ " node.community {"
-				+ "		size: 25px, 25px;"
 				+ "		text-mode: hidden;"
 				+ "		visibility-mode: zoom-range;}"
 				+ " node:selected {"
