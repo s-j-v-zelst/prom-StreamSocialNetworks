@@ -1,29 +1,22 @@
 package org.processmining.streamsocialnetworks.louvain.visualizers;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Random;
 
-import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.stream.GraphReplay;
 import org.graphstream.ui.graphicGraph.GraphicNode;
 import org.graphstream.ui.layout.Layout;
 import org.graphstream.ui.layout.springbox.implementations.SpringBox;
-import org.graphstream.ui.swingViewer.ViewPanel;
-import org.graphstream.ui.view.Camera;
 import org.graphstream.ui.view.Viewer;
 import org.processmining.streamsocialnetworks.louvain.LSocialNetwork;
-import org.processmining.streamsocialnetworks.louvain.LSocialNetworkClustered;
-import org.processmining.streamsocialnetworks.louvain.LouvainDirectedSingleIteration;
+import org.processmining.streamsocialnetworks.louvain.LouvainSingleIteration;
 import org.processmining.streamsocialnetworks.louvain.Node;
 import org.processmining.streamsocialnetworks.louvain.NodesPair;
 import org.processmining.streamsocialnetworks.louvain.ResourcesPair;
-import org.processmining.streamsocialnetworks.louvain.LSocialNetwork.Type;
-import org.processmining.streamsocialnetworks.louvain.networks.LouvainWorkingTogetherNetwork;
 
 import gnu.trove.map.TObjectDoubleMap;
 
@@ -43,7 +36,7 @@ public class GraphVisualization {
 		Graph graph = new SingleGraph("Graph");
 		Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
 		
-		LouvainDirectedSingleIteration clustering = new LouvainDirectedSingleIteration();
+		LouvainSingleIteration clustering = new LouvainSingleIteration();
 	
 		// Initialize the network such that each resource is has its own community
 		TObjectDoubleMap<NodesPair> communityNetwork = clustering.initializeNetwork(network);
@@ -56,7 +49,7 @@ public class GraphVisualization {
 		while (!stop) {
 			for (int i = 0; i < 8; i++) { // maximum number of levels
 			
-				TObjectDoubleMap<NodesPair> cluster = clustering.louvain(communityNetwork);			
+				TObjectDoubleMap<NodesPair> cluster = clustering.louvain(communityNetwork, graphType);			
 				
 				if (communityNetwork.equals(cluster)) {
 					stop = true;
@@ -225,8 +218,13 @@ public class GraphVisualization {
 						graph.getNode(i + label.toString()).addAttribute("ui.class", "community");
 						
 						// Specify color and visibility of the community node
-						double zoomLow = 1 + ((double) i * 3 / (double) clusterLevel.size());
-						double zoomHigh = 1 + ((double) i * 3 / (double) clusterLevel.size()) + (3 / (double) clusterLevel.size());			
+						double zoomLow = 1 + (i * 3 / (double) clusterLevel.size());
+						double zoomHigh = 1 + (i * 3 / (double) clusterLevel.size()) + (3 / (double) clusterLevel.size());	
+						
+						if (zoomHigh == 4) {
+							zoomHigh = 100;
+						}
+						
 						graph.getNode(i + label.toString()).addAttribute("ui.style", "fill-color:" + rgb + "; visibility: " + zoomLow + "," + zoomHigh + ";");
 						
 						// Add text to the community node
@@ -288,19 +286,20 @@ public class GraphVisualization {
 							resourcesNodeB.append(resource + ", ");
 						}
 						
-						if (clusterLevel.get(i).containsKey(np) && graph.getEdge(i + resourcesNodeB.toString() + "-" + resourcesNodeA.toString()) == null) {
-							graph.addEdge(i + resourcesNodeA.toString() + "-" + resourcesNodeB.toString(), 
+						if (clusterLevel.get(i).containsKey(np) && graph.getEdge(i + resourcesNodeB.toString() + ", " + resourcesNodeA.toString()) == null) {
+							graph.addEdge(i + resourcesNodeA.toString() + ", " + resourcesNodeB.toString(), 
 									i + resourcesNodeA.toString(), i + resourcesNodeB.toString());
-							graph.getEdge(i + resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.class", "community");
+							graph.getEdge(i + resourcesNodeA.toString() + ", " + resourcesNodeB.toString()).addAttribute("ui.class", "community");
 							
 							// Specify visibility of the edge
-							double zoomLow = 1 + ((double) i * 3 / (double) clusterLevel.size());
-							double zoomHigh = 1 + ((double) i * 3 / (double) clusterLevel.size()) + (3 / (double) clusterLevel.size());			
-							graph.getEdge(i + resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.style", "visibility: " + zoomLow + "," + zoomHigh + ";");
-						
-							// Label the edge
-							String label = new Double(clusterLevel.get(i).get(np)).toString();
-							graph.getEdge(i + resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.label", label);
+							double zoomLow = 1 + (i * 3 / (double) clusterLevel.size());
+							double zoomHigh = 1 + (i * 3 / (double) clusterLevel.size()) + (3 / (double) clusterLevel.size());
+							
+							if (zoomHigh == 4) {
+								zoomHigh = 100;
+							}
+							
+							graph.getEdge(i + resourcesNodeA.toString() + ", " + resourcesNodeB.toString()).addAttribute("ui.style", "visibility: " + zoomLow + "," + zoomHigh + ";");
 						} 				
 					}
 				}
@@ -332,18 +331,19 @@ public class GraphVisualization {
 						}
 					
 						if (clusterLevel.get(i).containsKey(np)) {
-							graph.addEdge(i + resourcesNodeA.toString() + "-" + resourcesNodeB.toString(), 
+							graph.addEdge(i + resourcesNodeA.toString() + ", " + resourcesNodeB.toString(), 
 									i + resourcesNodeA.toString(), i + resourcesNodeB.toString(), true);
-							graph.getEdge(i + resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.class", "community");
+							graph.getEdge(i + resourcesNodeA.toString() + ", " + resourcesNodeB.toString()).addAttribute("ui.class", "community");
 							
 							// Specify visibility of the edge
-							double zoomLow = 1 + ((double) i * 3 / (double) clusterLevel.size());
-							double zoomHigh = 1 + ((double) i * 3 / (double) clusterLevel.size()) + (3 / (double) clusterLevel.size());			
-							graph.getEdge(i + resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.style", "visibility: " + zoomLow + "," + zoomHigh + ";");
-						
-							// Label the edge
-							String label = new Double(clusterLevel.get(i).get(np)).toString();
-							graph.getEdge(i + resourcesNodeA.toString() + "-" + resourcesNodeB.toString()).addAttribute("ui.label", label);
+							double zoomLow = 1 + (i * 3 / (double) clusterLevel.size());
+							double zoomHigh = 1 + (i * 3 / (double) clusterLevel.size()) + (3 / (double) clusterLevel.size());	
+							
+							if (zoomHigh == 4) {
+								zoomHigh = 100;
+							}
+							
+							graph.getEdge(i + resourcesNodeA.toString() + ", " + resourcesNodeB.toString()).addAttribute("ui.style", "visibility: " + zoomLow + "," + zoomHigh + ";");
 						} 				
 					}
 				}
@@ -374,8 +374,7 @@ public class GraphVisualization {
 				+ "		visibility: 1;"
 				+ "		visibility-mode: under-zoom;}"
 				+ " edge.community {"
-				+ "		visibility-mode: zoom-range;"
-				+ "		text-visibility-mode: hidden;}"
+				+ "		visibility-mode: zoom-range;}"
 				+ ""
 				+ " edge.invisible {"
 				+ "		visibility-mode: hidden;}");

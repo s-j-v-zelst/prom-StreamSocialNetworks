@@ -1,29 +1,20 @@
 package org.processmining.streamsocialnetworks.louvain.visualizers;
 
 import java.awt.BorderLayout;
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import org.graphstream.graph.Graph;
-import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.swingViewer.ViewPanel;
 import org.graphstream.ui.view.Camera;
 import org.graphstream.ui.view.Viewer;
-import org.graphstream.ui.view.ViewerListener;
-import org.graphstream.ui.view.ViewerPipe;
 import org.processmining.contexts.uitopia.annotations.UITopiaVariant;
 import org.processmining.contexts.uitopia.annotations.Visualizer;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.annotations.Plugin;
 import org.processmining.framework.plugin.annotations.PluginVariant;
 import org.processmining.streamsocialnetworks.louvain.LSocialNetwork;
-import org.processmining.streamsocialnetworks.louvain.ResourcesPair;
-
-import com.fluxicon.slickerbox.factory.SlickerFactory;
 
 @Plugin(name = "Social Network Visualizer", parameterLabels = { "Social Network" }, returnLabels = {
 		"Social Network Visualizer" }, returnTypes = { JComponent.class })

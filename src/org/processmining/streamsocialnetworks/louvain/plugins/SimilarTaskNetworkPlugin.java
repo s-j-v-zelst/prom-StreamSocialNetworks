@@ -9,7 +9,7 @@ import org.processmining.streamsocialnetworks.louvain.LSocialNetwork;
 import org.processmining.streamsocialnetworks.louvain.LSocialNetwork.Type;
 import org.processmining.streamsocialnetworks.louvain.networks.SimilarTaskNetwork;
 
-@Plugin(name = "Similar Task Network", parameterLabels = { "Event Log" }, returnLabels = {
+@Plugin(name = "Louvain clustering similar task network", parameterLabels = { "Event Log" }, returnLabels = {
 		"Social Network" }, returnTypes = { LSocialNetwork.class })
 public class SimilarTaskNetworkPlugin {
 	@UITopiaVariant(author = "C. Verhoef", email = "c.verhoef@student.tue.nl", affiliation = "Eindhoven University of Technology")

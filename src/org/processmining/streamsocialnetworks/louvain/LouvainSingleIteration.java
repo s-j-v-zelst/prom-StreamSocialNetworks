@@ -1,25 +1,20 @@
 package org.processmining.streamsocialnetworks.louvain;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.deckfour.xes.model.XLog;
-import org.processmining.streamsocialnetworks.louvain.networks.HandoverOfWorkNetwork;
-import org.processmining.streamsocialnetworks.louvain.networks.SimilarTaskNetwork;
-import org.processmining.streamsocialnetworks.louvain.networks.WorkingTogetherNetwork;
-import org.processmining.streamsocialnetworks.util.XESImporter;
+import org.processmining.streamsocialnetworks.louvain.visualizers.GraphVisualization.Type;
 
 import gnu.trove.map.TObjectDoubleMap;
 import gnu.trove.map.hash.TObjectDoubleHashMap;
 
-public class LouvainUndirectedSingleIteration {
+public class LouvainSingleIteration {
 	boolean stop;
 	
 	/**
 	 * Determines the communities in a directed network with the use of Louvain algorithm.
 	 */
-	public TObjectDoubleMap<NodesPair> louvain(TObjectDoubleMap<NodesPair> communityNetwork) {			
+	public TObjectDoubleMap<NodesPair> louvain(TObjectDoubleMap<NodesPair> communityNetwork, Type graphType) {			
 		// Get the set of nodes
 		Set<Node> nodes = new HashSet<>();
 		nodes = getNodesOfNetwork(communityNetwork);
@@ -28,7 +23,7 @@ public class LouvainUndirectedSingleIteration {
 		Set<Set<Node>> communities = new HashSet<>();
 			
 		// Get the communities of the nodes
-		communities = optimization(communityNetwork, nodes);
+		communities = optimization(communityNetwork, nodes, graphType);
 		// Build a new network based on the found communities
 		communityNetwork = aggregation(communityNetwork, communities);
  
@@ -67,7 +62,7 @@ public class LouvainUndirectedSingleIteration {
 	 * repeatedly and sequentially for all nodes until no further improvement can be 
 	 * achieved. 
 	 */
-	public Set<Set<Node>> optimization(TObjectDoubleMap<NodesPair> communityNetwork, Set<Node> nodes) {
+	public Set<Set<Node>> optimization(TObjectDoubleMap<NodesPair> communityNetwork, Set<Node> nodes, Type graphType) {
 		// The set of communities 
 		Set<Set<Node>> communities = new HashSet<>();
 		
@@ -88,7 +83,7 @@ public class LouvainUndirectedSingleIteration {
 			// Move each node to the community of its neighbor resulting in the highest modularity gain 
 			for (Node node : nodes) {
 				// Determines the community with highest modularity gain 
-				Set<Node> communityTo = maximumGain(node, communityNetwork, communities);
+				Set<Node> communityTo = maximumGain(node, communityNetwork, communities, graphType);
 				Set<Node> communityFrom = findCommunity(node, communities);
 				
 				// Only move the node when an other community is found 
@@ -239,7 +234,7 @@ public class LouvainUndirectedSingleIteration {
 	/**
 	 * Determine the neighbor community that result in the maximum modularity gain of moving the node. 
 	 */
-	public Set<Node> maximumGain(Node node, TObjectDoubleMap<NodesPair> communityNetwork, Set<Set<Node>> communities) {
+	public Set<Node> maximumGain(Node node, TObjectDoubleMap<NodesPair> communityNetwork, Set<Set<Node>> communities, Type graphType) {
 		// Initialize the community with maximum gain the original community of the node
 		Set<Node> communityMax = findCommunity(node, communities); 
 		double maxGain = 0;
@@ -261,7 +256,13 @@ public class LouvainUndirectedSingleIteration {
 		}
 		
 		for (Node neighbor : neighbors) {
-			double modularityGain = computeModularityGain(node, neighbor, communityNetwork, communities);
+			double modularityGain = 0.0; 
+			
+			if (graphType == Type.DIRECTED) {
+				modularityGain = computeModularityGainDirected(node, neighbor, communityNetwork, communities);
+			} else {
+				modularityGain = computeModularityGainDirected(node, neighbor, communityNetwork, communities);
+			}
 			
 			if (modularityGain > maxGain) {
 				maxGain = modularityGain;
@@ -277,7 +278,7 @@ public class LouvainUndirectedSingleIteration {
 	/**
 	 * Computes the gain of modularity obtained by adding the node the community of the neighbor
 	 */
-	public double computeModularityGain(Node node, Node neighbor, TObjectDoubleMap<NodesPair> communityNetwork,
+	public double computeModularityGainDirected(Node node, Node neighbor, TObjectDoubleMap<NodesPair> communityNetwork,
 			Set<Set<Node>> communities) {
 		double gain = 0;
 			
@@ -331,6 +332,61 @@ public class LouvainUndirectedSingleIteration {
 	
 		// Compute modularity gain -- see formula in paper directed Louvain by Nicolas Dugue and Anthony Perez
 		gain = (degreeC / m) - ((degreeOut * sumTotIn) + (degreeIn * sumTotOut)) / (m * m);
+			
+		return gain;
+	}
+	
+	
+	public double computeModularityGainUndirected(Node node, Node neighbor, TObjectDoubleMap<NodesPair> communityNetwork,
+			Set<Set<Node>> communities) {
+		double gain = 0;
+			
+		double degreeC = 0; // sum of the edges from/to the node and nodes in the community
+		double degree = 0; // sum of the edges form/to the node
+		double sumTot = 0; // sum of the edges from/to nodes in the community
+		double m = 0; // sum of all edges in the network
+		
+		// Find the community of the neighbor
+		Set<Node> communityNeighbor = findCommunity(neighbor, communities);
+		
+		// Compute the values
+		for (NodesPair np : communityNetwork.keySet()) {
+			Node nodeA = np.getNodeA();
+			Node nodeB = np.getNodeB();
+			
+			// degreeC
+			if (node.equals(nodeA) && communityNeighbor.contains(nodeB)) {
+				degreeC = degreeC + communityNetwork.get(np);
+			}
+			
+			if (node.equals(nodeB) && communityNeighbor.contains(nodeA)) {
+				degreeC = degreeC + communityNetwork.get(np);
+			}
+			
+			// degree
+			if (node.equals(nodeB)) {
+				degree = degree + communityNetwork.get(np);
+			}
+			
+			if (node.equals(nodeA)) {
+				degree = degree + communityNetwork.get(np);
+			}
+			
+			// sumTot
+			if (communityNeighbor.contains(nodeB)) {
+				sumTot = sumTot + communityNetwork.get(np);
+			}
+			
+			if (communityNeighbor.contains(nodeA)) {
+				sumTot = sumTot + communityNetwork.get(np);
+			}
+			
+			// m
+			m = m + communityNetwork.get(np);
+		}
+	
+		// Compute modularity gain -- see formula in paper directed Louvain by Nicolas Dugue and Anthony Perez
+		gain = (degreeC / (2 * m)) - ((sumTot * degree)/ (2 * m * m));
 			
 		return gain;
 	}
