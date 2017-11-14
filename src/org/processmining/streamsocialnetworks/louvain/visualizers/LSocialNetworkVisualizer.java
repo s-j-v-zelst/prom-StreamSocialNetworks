@@ -65,14 +65,12 @@ public class LSocialNetworkVisualizer {
 		ViewPanel viewPanel = viewer.addDefaultView(false);
 		viewPanel.setOpaque(false);
 		
-		// TODO Graph not in center of view
 		Camera camera = viewPanel.getCamera();
 		camera.setViewPercent(4);
 	
 		panel.setLayout(new BorderLayout());
         panel.add(viewPanel, BorderLayout.CENTER);
         
-
 		return panel;
 	}
 }

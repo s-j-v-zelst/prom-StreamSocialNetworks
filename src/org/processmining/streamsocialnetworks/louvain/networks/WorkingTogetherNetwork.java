@@ -12,7 +12,7 @@ import org.deckfour.xes.model.XLog;
 import org.deckfour.xes.model.XTrace;
 import org.processmining.streamsocialnetworks.louvain.LSocialNetwork;
 import org.processmining.streamsocialnetworks.louvain.ResourcesPair;
-import org.processmining.streamsocialnetworks.louvain.LSocialNetwork.Type;
+import org.processmining.streamsocialnetworks.louvain.MatrixVisualization;
 import org.processmining.streamsocialnetworks.util.XESImporter;
 
 import gnu.trove.map.TObjectDoubleMap;
@@ -115,7 +115,7 @@ public class WorkingTogetherNetwork {
 	}
 	
 	public static void main(final String[] args) {
-		XLog bpiLog = XESImporter.importXLog(new File("C:\\Users\\s145283\\Desktop\\2IMI05 - Capita Selecta\\BPI_Challenge_2012.xes"));
+		XLog bpiLog = XESImporter.importXLog(new File("C:\\Users\\s145283\\Desktop\\2IMI05 - Capita Selecta\\Logs\\teleclaim.xes"));
 		
 		WorkingTogetherNetwork network = new WorkingTogetherNetwork(bpiLog);
 		
@@ -123,11 +123,11 @@ public class WorkingTogetherNetwork {
 		LSocialNetwork workingTogetherNetwork = network.computeNetwork();
 		
 		// Visualize the network
-		// MatrixVisualization visualization = new MatrixVisualization();
-		// List<List<Double>> networkVisualization = visualization.visualizeNetwork(workingTogetherNetwork);
+		MatrixVisualization visualization = new MatrixVisualization();
+		List<List<Double>> networkVisualization = visualization.visualizeNetwork(workingTogetherNetwork);
 				
-		// for (int i = 0; i < networkVisualization.size(); i++) {
-		// 	System.out.println(networkVisualization.get(i));
-		// }	
+		for (int i = 0; i < networkVisualization.size(); i++) {
+			System.out.println(networkVisualization.get(i));
+		}	
 	}
 }

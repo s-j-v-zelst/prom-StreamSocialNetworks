@@ -34,7 +34,8 @@ public class GraphVisualization {
 	public static Graph createGraph(Type graphType, LSocialNetwork network) {
 		System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
 		Graph graph = new SingleGraph("Graph");
-		
+		Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+
 		// Graph visualization options
 		graph.addAttribute("ui.stylesheet", 
 				"	node.individual {"
@@ -69,26 +70,24 @@ public class GraphVisualization {
 				+ ""
 				+ " edge.invisible {"
 				+ "		visibility-mode: hidden;}");
-				
-		Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
 		
-		Random rand = new Random();
+		// Random function is used for assigning colors to nodes
+		Random rand = new Random(); 
 		
-		LouvainSingleIteration clustering = new LouvainSingleIteration();
-	
 		// Initialize the network such that each resource is has its own community
+		LouvainSingleIteration clustering = new LouvainSingleIteration();
 		TObjectDoubleMap<NodesPair> communityNetwork = clustering.initializeNetwork(network);
 		
 		// Compute communities of different levels
 		ArrayList<TObjectDoubleMap<NodesPair>> clusterLevel = new ArrayList<>();
 		
-		boolean stop = false; // Iterate until no improvement is possible
+		boolean stop = false; 
 		
+		// Iterate until no improvement is possible
 		while (!stop) {
-			for (int i = 0; i < 8; i++) { // maximum number of levels
-				
-				TObjectDoubleMap<NodesPair> cluster = clustering.louvain(communityNetwork, graphType);			
-				
+			// Maximum number of community levels is 8 
+			for (int i = 0; i < 8; i++) { 
+				TObjectDoubleMap<NodesPair> cluster = clustering.louvain(communityNetwork);					
 				
 				if (communityNetwork.equals(cluster)) {
 					stop = true;
@@ -97,12 +96,16 @@ public class GraphVisualization {
 				
 				clusterLevel.add(cluster);
 				
-				// New communityNetwork of higher level for next iteration
+				// New community network for next iteration
 				communityNetwork = cluster;
 			}
 		}	
+	
 		
-		// No communities exist
+		/**
+		 * No community structure is found
+		 */
+		
 		if (clusterLevel.size() == 0) {
 			// Get the resources
 			Set<String> resources = new HashSet<>();
@@ -168,8 +171,9 @@ public class GraphVisualization {
 			return graph;
 		}
 		
+		
 		/**
-		 * Create the network of individual resources
+		 * Create the network of individual resources when a community structure is found
 		 */	
 		
 		// Get the resources
@@ -230,7 +234,7 @@ public class GraphVisualization {
 				
 		
 		/**
-		 *  Cluster the resources of the same community 
+		 * Cluster the resources of the same community 
 		 */
 		
 		// Get the communities 
@@ -255,7 +259,7 @@ public class GraphVisualization {
 			communitiesLevel.add(communities);
 		}
 		
-		// Group the resources based on the final community structure -- if community structure exists
+		// Group the resources based on the final community structure 
 		for (Node n : communitiesLevel.get(communitiesLevel.size() - 1)) {
 			Set<String> community = n.getResources();
 			StringBuilder label = new StringBuilder();
@@ -337,6 +341,7 @@ public class GraphVisualization {
 						// Size of the community
 						int communitySize = individualResources.size();
 						
+						// Give different sizes to communities of different sizes
 						if (communitySize <= 10) {
 							graph.getNode(i + label.toString()).addAttribute("ui.style", "fill-color:" + rgb + "; visibility: " + zoomLow + "," + zoomHigh + "; size: 15px, 15px;");
 						} else if (communitySize > 10 && communitySize <= 20) {

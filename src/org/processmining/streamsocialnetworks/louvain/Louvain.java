@@ -5,8 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.deckfour.xes.model.XLog;
-import org.processmining.streamsocialnetworks.louvain.networks.HandoverOfWorkNetwork;
-import org.processmining.streamsocialnetworks.louvain.networks.SimilarTaskNetwork;
 import org.processmining.streamsocialnetworks.louvain.networks.WorkingTogetherNetwork;
 import org.processmining.streamsocialnetworks.util.XESImporter;
 
@@ -413,26 +411,18 @@ public class Louvain {
 		
 		// Choose a network type
 		WorkingTogetherNetwork network = new WorkingTogetherNetwork(bpiLog);
-		//SimilarTaskNetwork network = new SimilarTaskNetwork(bpiLog);
-		//HandoverOfWorkNetwork network = new HandoverOfWorkNetwork(bpiLog);
 		
 		// Compute the values of the network
 		TObjectDoubleMap<ResourcesPair> workingTogetherNetwork = network.computeNetwork();
-		//TObjectDoubleMap<ResourcesPair> similarTaskNetwork = network.computeNetwork();
-		//TObjectDoubleMap<ResourcesPair> handoverOfWorkNetwork = network.computeNetwork();
 		
 		// Detect communities for the network
 		Louvain communityDetection = new Louvain();
 		TObjectDoubleMap<NodesPair> communityNetwork = communityDetection.louvain(workingTogetherNetwork);
-		//TObjectDoubleMap<NodesPair> communityNetwork = communityDetection.louvain(similarTaskNetwork);
-		//TObjectDoubleMap<NodesPair> communityNetwork = communityDetection.louvain(handoverOfWorkNetwork);
 		
 		// How many number of resources?
 		Set<String> resources = new HashSet<>();
 		
 		for (ResourcesPair rp : workingTogetherNetwork.keySet()) {	
-		//for (ResourcesPair rp : similarTaskNetwork.keySet()) {	
-		//for (ResourcesPair rp : handoverOfWorkNetwork.keySet()) {		
 			String resourceA = rp.getResourceA();
 			String resourceB = rp.getResourceB();
 			
@@ -445,11 +435,9 @@ public class Louvain {
 			}
 		}
 		
-		//System.out.println("resources " + resources.size());
-		//System.out.println("resourcesPair " + workingTogetherNetwork.keySet().size());
-		//System.out.println("resourcesPair " + similarTaskNetwork.keySet().size());
-		//System.out.println("resourcesPair " + handoverOfWorkNetwork.keySet().size());
-		
+		System.out.println("resources " + resources.size());
+		System.out.println("resourcesPair " + workingTogetherNetwork.keySet().size());
+	
 		// How many number of communities? -- each node in the community network is represents a community
 		Set<Node> communities = new HashSet<>();
 		
@@ -466,8 +454,8 @@ public class Louvain {
 			}
 		}
 		
-		//System.out.println("communities " + communities.size());
-		//System.out.println("communitiesPair " + communityNetwork.keySet().size());
+		System.out.println("communities " + communities.size());
+		System.out.println("communitiesPair " + communityNetwork.keySet().size());
 		
 		
 		// What are the communities?
@@ -476,7 +464,7 @@ public class Louvain {
 			
 			//System.out.println("Community consists of resources: ");
 			for (String r : resourcesInCommunity) {
-				//System.out.println(r);
+				System.out.println(r);
 			}
 		}
 		

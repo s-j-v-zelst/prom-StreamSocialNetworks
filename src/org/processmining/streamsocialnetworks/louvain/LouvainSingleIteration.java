@@ -3,8 +3,6 @@ package org.processmining.streamsocialnetworks.louvain;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.processmining.streamsocialnetworks.louvain.visualizers.GraphVisualization.Type;
-
 import gnu.trove.map.TObjectDoubleMap;
 import gnu.trove.map.hash.TObjectDoubleHashMap;
 
@@ -14,7 +12,7 @@ public class LouvainSingleIteration {
 	/**
 	 * Determines the communities in a directed network with the use of Louvain algorithm.
 	 */
-	public TObjectDoubleMap<NodesPair> louvain(TObjectDoubleMap<NodesPair> communityNetwork, Type graphType) {			
+	public TObjectDoubleMap<NodesPair> louvain(TObjectDoubleMap<NodesPair> communityNetwork) {			
 		// Get the set of nodes
 		Set<Node> nodes = new HashSet<>();
 		nodes = getNodesOfNetwork(communityNetwork);
@@ -23,7 +21,7 @@ public class LouvainSingleIteration {
 		Set<Set<Node>> communities = new HashSet<>();
 			
 		// Get the communities of the nodes
-		communities = optimization(communityNetwork, nodes, graphType);
+		communities = optimization(communityNetwork, nodes);
 		// Build a new network based on the found communities
 		communityNetwork = aggregation(communityNetwork, communities);
  
@@ -62,7 +60,7 @@ public class LouvainSingleIteration {
 	 * repeatedly and sequentially for all nodes until no further improvement can be 
 	 * achieved. 
 	 */
-	public Set<Set<Node>> optimization(TObjectDoubleMap<NodesPair> communityNetwork, Set<Node> nodes, Type graphType) {
+	public Set<Set<Node>> optimization(TObjectDoubleMap<NodesPair> communityNetwork, Set<Node> nodes) {
 		// The set of communities 
 		Set<Set<Node>> communities = new HashSet<>();
 		
@@ -83,7 +81,7 @@ public class LouvainSingleIteration {
 			// Move each node to the community of its neighbor resulting in the highest modularity gain 
 			for (Node node : nodes) {
 				// Determines the community with highest modularity gain 
-				Set<Node> communityTo = maximumGain(node, communityNetwork, communities, graphType);
+				Set<Node> communityTo = maximumGain(node, communityNetwork, communities);
 				Set<Node> communityFrom = findCommunity(node, communities);
 				
 				// Only move the node when an other community is found 
@@ -234,7 +232,8 @@ public class LouvainSingleIteration {
 	/**
 	 * Determine the neighbor community that result in the maximum modularity gain of moving the node. 
 	 */
-	public Set<Node> maximumGain(Node node, TObjectDoubleMap<NodesPair> communityNetwork, Set<Set<Node>> communities, Type graphType) {
+	
+	public Set<Node> maximumGain(Node node, TObjectDoubleMap<NodesPair> communityNetwork, Set<Set<Node>> communities) {
 		// Initialize the community with maximum gain the original community of the node
 		Set<Node> communityMax = findCommunity(node, communities); 
 		double maxGain = 0;
@@ -258,11 +257,8 @@ public class LouvainSingleIteration {
 		for (Node neighbor : neighbors) {
 			double modularityGain = 0.0; 
 			
-			if (graphType == Type.DIRECTED) {
-				modularityGain = computeModularityGainDirected(node, neighbor, communityNetwork, communities);
-			} else {
-				modularityGain = computeModularityGainDirected(node, neighbor, communityNetwork, communities);
-			}
+			modularityGain = computeModularityGain(node, neighbor, communityNetwork, communities);
+			
 			
 			if (modularityGain > maxGain) {
 				maxGain = modularityGain;
@@ -278,7 +274,8 @@ public class LouvainSingleIteration {
 	/**
 	 * Computes the gain of modularity obtained by adding the node the community of the neighbor
 	 */
-	public double computeModularityGainDirected(Node node, Node neighbor, TObjectDoubleMap<NodesPair> communityNetwork,
+	
+	public double computeModularityGain(Node node, Node neighbor, TObjectDoubleMap<NodesPair> communityNetwork,
 			Set<Set<Node>> communities) {
 		double gain = 0;
 			
@@ -337,63 +334,10 @@ public class LouvainSingleIteration {
 	}
 	
 	
-	public double computeModularityGainUndirected(Node node, Node neighbor, TObjectDoubleMap<NodesPair> communityNetwork,
-			Set<Set<Node>> communities) {
-		double gain = 0;
-			
-		double degreeC = 0; // sum of the edges from/to the node and nodes in the community
-		double degree = 0; // sum of the edges form/to the node
-		double sumTot = 0; // sum of the edges from/to nodes in the community
-		double m = 0; // sum of all edges in the network
-		
-		// Find the community of the neighbor
-		Set<Node> communityNeighbor = findCommunity(neighbor, communities);
-		
-		// Compute the values
-		for (NodesPair np : communityNetwork.keySet()) {
-			Node nodeA = np.getNodeA();
-			Node nodeB = np.getNodeB();
-			
-			// degreeC
-			if (node.equals(nodeA) && communityNeighbor.contains(nodeB)) {
-				degreeC = degreeC + communityNetwork.get(np);
-			}
-			
-			if (node.equals(nodeB) && communityNeighbor.contains(nodeA)) {
-				degreeC = degreeC + communityNetwork.get(np);
-			}
-			
-			// degree
-			if (node.equals(nodeB)) {
-				degree = degree + communityNetwork.get(np);
-			}
-			
-			if (node.equals(nodeA)) {
-				degree = degree + communityNetwork.get(np);
-			}
-			
-			// sumTot
-			if (communityNeighbor.contains(nodeB)) {
-				sumTot = sumTot + communityNetwork.get(np);
-			}
-			
-			if (communityNeighbor.contains(nodeA)) {
-				sumTot = sumTot + communityNetwork.get(np);
-			}
-			
-			// m
-			m = m + communityNetwork.get(np);
-		}
-	
-		// Compute modularity gain -- see formula in paper directed Louvain by Nicolas Dugue and Anthony Perez
-		gain = (degreeC / (2 * m)) - ((sumTot * degree)/ (2 * m * m));
-			
-		return gain;
-	}
-	
 	/**
 	 * Find the community the node belongs to.
 	 */
+	
 	public Set<Node> findCommunity(Node node, Set<Set<Node>> communities) {
 		Set<Node> community = new HashSet<>();
 		

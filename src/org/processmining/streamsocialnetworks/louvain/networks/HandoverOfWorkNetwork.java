@@ -10,7 +10,6 @@ import org.deckfour.xes.model.XLog;
 import org.deckfour.xes.model.XTrace;
 import org.processmining.streamsocialnetworks.louvain.LSocialNetwork;
 import org.processmining.streamsocialnetworks.louvain.ResourcesPair;
-import org.processmining.streamsocialnetworks.louvain.LSocialNetwork.Type;
 import org.processmining.streamsocialnetworks.louvain.MatrixVisualization;
 import org.processmining.streamsocialnetworks.util.XESImporter;
 
@@ -126,7 +125,7 @@ public class HandoverOfWorkNetwork {
 		
 		HandoverOfWorkNetwork network = new HandoverOfWorkNetwork(bpiLog);
 		
-		// Compute the values for the similar task network
+		// Compute the values for the handover of work network
 		LSocialNetwork handoverOfWorkNetwork = network.computeNetwork();
 		
 		// Visualize the network

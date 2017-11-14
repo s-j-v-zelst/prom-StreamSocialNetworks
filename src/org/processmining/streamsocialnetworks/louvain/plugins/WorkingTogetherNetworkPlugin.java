@@ -6,7 +6,6 @@ import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.annotations.Plugin;
 import org.processmining.framework.plugin.annotations.PluginVariant;
 import org.processmining.streamsocialnetworks.louvain.LSocialNetwork;
-import org.processmining.streamsocialnetworks.louvain.LSocialNetwork.Type;
 import org.processmining.streamsocialnetworks.louvain.networks.WorkingTogetherNetwork;
 
 @Plugin(name = "Louvain clustering working together network", parameterLabels = { "Event Log" }, returnLabels = {

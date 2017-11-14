@@ -13,7 +13,7 @@ import org.deckfour.xes.model.XTrace;
 import org.processmining.streamsocialnetworks.louvain.LSocialNetwork;
 import org.processmining.streamsocialnetworks.louvain.ResourceActivityPair;
 import org.processmining.streamsocialnetworks.louvain.ResourcesPair;
-import org.processmining.streamsocialnetworks.louvain.LSocialNetwork.Type;
+import org.processmining.streamsocialnetworks.louvain.MatrixVisualization;
 import org.processmining.streamsocialnetworks.util.XESImporter;
 
 import gnu.trove.map.TObjectDoubleMap;
@@ -110,11 +110,11 @@ public class SimilarTaskNetwork {
 		LSocialNetwork similarTaskNetwork = network.computeNetwork();
 		
 		// Visualize the network
-		// MatrixVisualization visualization = new MatrixVisualization();
-		// List<List<Double>> networkVisualization = visualization.visualizeNetwork(similarTaskNetwork);
+		MatrixVisualization visualization = new MatrixVisualization();
+		List<List<Double>> networkVisualization = visualization.visualizeNetwork(similarTaskNetwork);
 				
-		// for (int i = 0; i < networkVisualization.size(); i++) {
-		// 	System.out.println(networkVisualization.get(i));
-		// }	
+		for (int i = 0; i < networkVisualization.size(); i++) {
+		 	System.out.println(networkVisualization.get(i));
+		}	
 	}
 }
