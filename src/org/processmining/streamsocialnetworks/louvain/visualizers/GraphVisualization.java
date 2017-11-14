@@ -34,7 +34,45 @@ public class GraphVisualization {
 	public static Graph createGraph(Type graphType, LSocialNetwork network) {
 		System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
 		Graph graph = new SingleGraph("Graph");
+		
+		// Graph visualization options
+		graph.addAttribute("ui.stylesheet", 
+				"	node.individual {"
+				+ "		size: 15px, 15px;"
+				+ "		text-background-mode: rounded-box;"
+				+ "		text-alignment: at-right;"
+				+ "		text-size: 14px;"
+				+ "		visibility: 1;"
+				+ "		visibility-mode: under-zoom;}"
+				+ " node.community {"
+				+ "		text-mode: hidden;"
+				+ "		visibility-mode: zoom-range;}"
+				+ " node.noCommunity {"
+				+ "		size: 15px, 15px;"
+				+ "		text-background-mode: rounded-box;"
+				+ "		text-alignment: at-right;"
+				+ "		text-size: 14px;"
+				+ "		visibility-mode: normal;}"
+				+ " node:selected {"
+				+ "		text-mode: normal;"
+				+ "		text-background-mode: rounded-box;"
+				+ "		text-alignment: at-right;"
+				+ "		text-size: 14px;}"
+				+ ""
+				+ " edge.individual {"
+				+ "		visibility: 1;"
+				+ "		visibility-mode: under-zoom;}"
+				+ " edge.community {"
+				+ "		visibility-mode: zoom-range;}"
+				+ " edge.noCommunity {"
+				+ "		visibility-mode: normal;}"
+				+ ""
+				+ " edge.invisible {"
+				+ "		visibility-mode: hidden;}");
+				
 		Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+		
+		Random rand = new Random();
 		
 		LouvainSingleIteration clustering = new LouvainSingleIteration();
 	
@@ -48,8 +86,9 @@ public class GraphVisualization {
 		
 		while (!stop) {
 			for (int i = 0; i < 8; i++) { // maximum number of levels
-			
+				
 				TObjectDoubleMap<NodesPair> cluster = clustering.louvain(communityNetwork, graphType);			
+				
 				
 				if (communityNetwork.equals(cluster)) {
 					stop = true;
@@ -63,6 +102,71 @@ public class GraphVisualization {
 			}
 		}	
 		
+		// No communities exist
+		if (clusterLevel.size() == 0) {
+			// Get the resources
+			Set<String> resources = new HashSet<>();
+			
+			for (ResourcesPair rp : network.keySet()) {
+				String resourceA = rp.getResourceA();
+				String resourceB = rp.getResourceB();
+
+				if (!resources.contains(resourceA)) {
+					resources.add(resourceA);
+				}
+				
+				if (!resources.contains(resourceB)) {
+					resources.add(resourceB);
+				}
+			}
+			
+			// Add the resources as vertices in the network			
+			for (String resource : resources) {
+				graph.addNode(resource);
+				graph.getNode(resource).addAttribute("ui.class", "noCommunity");
+			}
+			
+			// Add edges between vertices 
+			if (graphType == Type.UNDIRECTED) { // Create undirected edges
+				for (String resourceA : resources) {
+					for (String resourceB : resources) {
+						ResourcesPair rp = new ResourcesPair(resourceA, resourceB);
+					
+						if (network.contains(rp) && graph.getEdge(resourceB + "-" + resourceA) == null) {
+							graph.addEdge(resourceA + "-" + resourceB, resourceA, resourceB);
+							graph.getEdge(resourceA + "-" + resourceB).addAttribute("ui.class", "noCommunity");
+						} 				
+					}
+				}
+			} else { // Create directed edges
+				for (String resourceA : resources) {
+					for (String resourceB : resources) {
+						ResourcesPair rp = new ResourcesPair(resourceA, resourceB);
+					
+						if (network.contains(rp)) {
+							graph.addEdge(resourceA + "-" + resourceB, resourceA, resourceB, true);
+							graph.getEdge(resourceA + "-" + resourceB).addAttribute("ui.class", "noCommunity");
+						} 				
+					}
+				}		
+			}
+			
+			for (org.graphstream.graph.Node node : graph) {
+				// Add names to the nodes
+		        node.addAttribute("ui.label", node.getId());	        
+		    }
+			
+			// Compute the layout
+			Layout layout = new SpringBox(false);;
+			computeLayout(graph, layout);
+			
+			for (org.graphstream.graph.Node node : graph) {
+				String rgb = "rgb(" + rand.nextInt(255) + ", " + rand.nextInt(255) + ", " + rand.nextInt(255) + ")"; 
+				node.addAttribute("ui.style", "fill-color:" + rgb + ";");
+			}
+			
+			return graph;
+		}
 		
 		/**
 		 * Create the network of individual resources
@@ -151,7 +255,7 @@ public class GraphVisualization {
 			communitiesLevel.add(communities);
 		}
 		
-		// Group the resources based on the final community structure
+		// Group the resources based on the final community structure -- if community structure exists
 		for (Node n : communitiesLevel.get(communitiesLevel.size() - 1)) {
 			Set<String> community = n.getResources();
 			StringBuilder label = new StringBuilder();
@@ -162,8 +266,7 @@ public class GraphVisualization {
 			Double positionY;
 			
 			// Color of the community
-			Random rand = new Random();
-			String rgb = "rgb("+ rand.nextInt(255) +", "+ rand.nextInt(255) +", "+ rand.nextInt(255) + ")"; 
+			String rgb = "rgb(" + rand.nextInt(255) + ", " + rand.nextInt(255) + ", " + rand.nextInt(255) + ")"; 
 			
 			for (String resource : community) {
 				// Give same color to the resources in the community
@@ -171,22 +274,28 @@ public class GraphVisualization {
 		
 				if (centerResource != null) {
 					gn = viewer.getGraphicGraph().getNode(centerResource);
-					positionX = gn.getX();
-					positionY = gn.getY();
 					
-					graph.getNode(resource).setAttribute("x", positionX + rand.nextDouble());
-					graph.getNode(resource).setAttribute("y", positionY + rand.nextDouble());
+					if (gn != null) {
+						positionX = gn.getX();
+						positionY = gn.getY();
+						
+						graph.getNode(resource).setAttribute("x", positionX + rand.nextDouble());
+						graph.getNode(resource).setAttribute("y", positionY + rand.nextDouble());
+					}
 				}
 				
 				if (centerResource == null) {
 					centerResource = resource;
 					
 					gn = viewer.getGraphicGraph().getNode(centerResource);
-					positionX = gn.getX();
-					positionY = gn.getY();
-				
-					graph.getNode(centerResource).setAttribute("x", positionX + rand.nextDouble());
-					graph.getNode(centerResource).setAttribute("y", positionY + rand.nextDouble());
+					
+					if (gn != null) {
+						positionX = gn.getX();
+						positionY = gn.getY();
+					
+						graph.getNode(centerResource).setAttribute("x", positionX + rand.nextDouble());
+						graph.getNode(centerResource).setAttribute("y", positionY + rand.nextDouble());
+					}
 				}
 			}
 			
@@ -242,11 +351,14 @@ public class GraphVisualization {
 						
 						// Position the community node
 						gn = viewer.getGraphicGraph().getNode(centerResource);
-						positionX = gn.getX();
-						positionY = gn.getY();
 						
-						graph.getNode(i + label.toString()).setAttribute("x", positionX);
-						graph.getNode(i + label.toString()).setAttribute("y", positionY);	
+						if (gn != null) {
+							positionX = gn.getX();
+							positionY = gn.getY();
+							
+							graph.getNode(i + label.toString()).setAttribute("x", positionX);
+							graph.getNode(i + label.toString()).setAttribute("y", positionY);	
+						}
 						
 						// Add invisible edge from community node to center resource to improve placement
 						graph.addEdge("x" + i + label.toString(), i + label.toString(), centerResource);
@@ -356,37 +468,7 @@ public class GraphVisualization {
 					}
 				}
 			}		
-		}	
-	
-		
-		
-		// Graph visualization options
-		graph.addAttribute("ui.stylesheet", 
-				"	node.individual {"
-				+ "		size: 15px, 15px;"
-				+ "		text-background-mode: rounded-box;"
-				+ "		text-alignment: at-right;"
-				+ "		text-size: 14px;"
-				+ "		visibility: 1;"
-				+ "		visibility-mode: under-zoom;}"
-				+ " node.community {"
-				+ "		text-mode: hidden;"
-				+ "		visibility-mode: zoom-range;}"
-				+ " node:selected {"
-				+ "		text-mode: normal;"
-				+ "		text-background-mode: rounded-box;"
-				+ "		text-alignment: at-right;"
-				+ "		text-size: 14px;}"
-				+ ""
-				+ " edge.individual {"
-				+ "		visibility: 1;"
-				+ "		visibility-mode: under-zoom;}"
-				+ " edge.community {"
-				+ "		visibility-mode: zoom-range;}"
-				+ ""
-				+ " edge.invisible {"
-				+ "		visibility-mode: hidden;}");
-		
+		}
 		
 		return graph;
 	}

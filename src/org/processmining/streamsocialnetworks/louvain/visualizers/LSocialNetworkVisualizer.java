@@ -16,6 +16,8 @@ import org.processmining.framework.plugin.annotations.Plugin;
 import org.processmining.framework.plugin.annotations.PluginVariant;
 import org.processmining.streamsocialnetworks.louvain.LSocialNetwork;
 
+import com.fluxicon.slickerbox.factory.SlickerFactory;
+
 @Plugin(name = "Social Network Visualizer", parameterLabels = { "Social Network" }, returnLabels = {
 		"Social Network Visualizer" }, returnTypes = { JComponent.class })
 @Visualizer
@@ -33,6 +35,11 @@ public class LSocialNetworkVisualizer {
 		JComponent panel = new JPanel();
 		Graph graph = new SingleGraph("Graph");
 		System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
+		
+		if (network.keySet().isEmpty()) {
+			panel.add(SlickerFactory.instance().createLabel("This network does not exist for the imported log."));
+			return panel;
+		}
 		
 		switch (network.getNetworkType()) {
 			case SIMILAR_TASK :

@@ -11,6 +11,7 @@ import org.deckfour.xes.model.XTrace;
 import org.processmining.streamsocialnetworks.louvain.LSocialNetwork;
 import org.processmining.streamsocialnetworks.louvain.ResourcesPair;
 import org.processmining.streamsocialnetworks.louvain.LSocialNetwork.Type;
+import org.processmining.streamsocialnetworks.louvain.MatrixVisualization;
 import org.processmining.streamsocialnetworks.util.XESImporter;
 
 import gnu.trove.map.TObjectDoubleMap;
@@ -129,11 +130,11 @@ public class HandoverOfWorkNetwork {
 		LSocialNetwork handoverOfWorkNetwork = network.computeNetwork();
 		
 		// Visualize the network
-		// MatrixVisualization visualization = new MatrixVisualization();
-		// List<List<Double>> networkVisualization = visualization.visualizeNetwork(handoverOfWorkNetwork);
+		MatrixVisualization visualization = new MatrixVisualization();
+		List<List<Double>> networkVisualization = visualization.visualizeNetwork(handoverOfWorkNetwork);
 				
-		// for (int i = 0; i < networkVisualization.size(); i++) {
-		//	System.out.println(networkVisualization.get(i));
-		// }	
+		for (int i = 0; i < networkVisualization.size(); i++) {
+			System.out.println(networkVisualization.get(i));
+		}	
 	}
 }
