@@ -87,7 +87,7 @@ public class GraphVisualization {
 		while (!stop) {
 			// Maximum number of community levels is 8 
 			for (int i = 0; i < 8; i++) { 
-				TObjectDoubleMap<NodesPair> cluster = clustering.louvain(communityNetwork);					
+				TObjectDoubleMap<NodesPair> cluster = clustering.louvain(communityNetwork, graphType);					
 				
 				if (communityNetwork.equals(cluster)) {
 					stop = true;
