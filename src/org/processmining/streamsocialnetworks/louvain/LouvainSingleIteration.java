@@ -344,9 +344,9 @@ public class LouvainSingleIteration {
 			Set<Set<Node>> communities) {
 		double gain = 0;
 			
-		double degreeC = 0; // sum of the edges from/to the node and nodes in the community
-		double degree = 0; // sum of the edges form/to the node
-		double sumTot = 0; // sum of the edges from/to nodes in the community
+		double degreeC = 0; // sum of the edges between the node and nodes in the community
+		double degree = 0; // sum of the edges from the node
+		double sumTot = 0; // sum of the edges from nodes in the community
 		double m = 0; // sum of all edges in the network
 		
 		// Find the community of the neighbor
@@ -362,28 +362,16 @@ public class LouvainSingleIteration {
 				degreeC = degreeC + communityNetwork.get(np);
 			}
 			
-			if (node.equals(nodeB) && communityNeighbor.contains(nodeA)) {
-				degreeC = degreeC + communityNetwork.get(np);
-			}
-			
 			// degree
-			if (node.equals(nodeB)) {
-				degree = degree + communityNetwork.get(np);
-			}
-			
 			if (node.equals(nodeA)) {
 				degree = degree + communityNetwork.get(np);
 			}
 			
 			// sumTot
-			if (communityNeighbor.contains(nodeB)) {
-				sumTot = sumTot + communityNetwork.get(np);
-			}
-			
 			if (communityNeighbor.contains(nodeA)) {
 				sumTot = sumTot + communityNetwork.get(np);
 			}
-			
+
 			// m
 			m = m + communityNetwork.get(np);
 		}
