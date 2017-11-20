@@ -44,17 +44,17 @@ public class LSocialNetworkVisualizer {
 		switch (network.getNetworkType()) {
 			case SIMILAR_TASK :
 				// Visualize undirected graph with vertices representing resources
-				graph = GraphVisualization.createGraph(GraphVisualization.Type.UNDIRECTED, network);
+				graph = GraphVisualization.createGraph(network, GraphVisualization.Type.UNDIRECTED);
 				
 				break;
 			case HANDOVER :
 				// Visualize directed graph with vertices representing resources
-				graph = GraphVisualization.createGraph(GraphVisualization.Type.DIRECTED, network);
+				graph = GraphVisualization.createGraph(network, GraphVisualization.Type.DIRECTED);
 				
 				break;
 			case WORKING_TOGETHER :
 				// Visualize directed graph with vertices representing resources
-				graph = GraphVisualization.createGraph(GraphVisualization.Type.DIRECTED, network);
+				graph = GraphVisualization.createGraph(network, GraphVisualization.Type.DIRECTED);
 		        
 				break;
 		}
