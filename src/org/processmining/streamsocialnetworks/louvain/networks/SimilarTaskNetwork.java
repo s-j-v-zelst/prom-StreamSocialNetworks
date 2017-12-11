@@ -102,7 +102,7 @@ public class SimilarTaskNetwork {
 	}
 
 	public static void main(final String[] args) {
-		XLog bpiLog = XESImporter.importXLog(new File("C:\\Users\\s145283\\Desktop\\2IMI05 - Capita Selecta\\BPI_Challenge_2012.xes"));
+		XLog bpiLog = XESImporter.importXLog(new File("C:\\Users\\s145283\\Desktop\\2IMI05 - Capita Selecta\\Logs\\BPI_Challenge_2012.xes"));
 		
 		SimilarTaskNetwork network = new SimilarTaskNetwork(bpiLog);
 		

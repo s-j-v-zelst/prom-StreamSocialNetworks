@@ -121,7 +121,7 @@ public class HandoverOfWorkNetwork {
 	}
 
 	public static void main(final String[] args) {
-		XLog bpiLog = XESImporter.importXLog(new File("C:\\Users\\s145283\\Desktop\\2IMI05 - Capita Selecta\\BPI_Challenge_2012.xes"));
+		XLog bpiLog = XESImporter.importXLog(new File("C:\\Users\\s145283\\Desktop\\2IMI05 - Capita Selecta\\Logs\\APM_Assignment_1.xes"));
 		
 		HandoverOfWorkNetwork network = new HandoverOfWorkNetwork(bpiLog);
 		

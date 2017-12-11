@@ -78,8 +78,9 @@ public class GraphVisualization {
 		ArrayList<Set<Node>> communities = getCommunities(hierarchicalClustering);
 		
 		// Create the network of individual resources
-		graph = createNetworkResources(graph, network, graphType);
 		
+		graph = createNetworkResources(graph, network, graphType);
+	
 		// No community structure is found
 		if (hierarchicalClustering.size() == 0) {
 			for (org.graphstream.graph.Node node : graph) {
@@ -237,7 +238,7 @@ public class GraphVisualization {
 	public static Graph clusterResources(Graph graph, ArrayList<Set<Node>> communities, ArrayList<TObjectDoubleMap<NodesPair>> hierarchicalClustering) {
 		Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
 		Random rand = new Random(); 
-		
+	
 		// Group the resources based on the final community structure 
 		for (Node n : communities.get(communities.size() - 1)) {
 			Set<String> community = n.getResources();
@@ -249,12 +250,16 @@ public class GraphVisualization {
 			Double positionY;
 			
 			// Color the community
-			String rgb = "rgb(" + rand.nextInt(255) + ", " + rand.nextInt(255) + ", " + rand.nextInt(255) + ")"; 
+			String rgb = "rgb(" + rand.nextInt(255) + ", " + rand.nextInt(255) + ", " + rand.nextInt(255) + ")";
 			
 			for (String resource : community) {
+				
+				
 				// Give same color to the resources in the community
 				graph.getNode(resource).addAttribute("ui.style", "fill-color:" + rgb + ";");
 		
+		
+				
 				if (centerResource != null) {
 					gn = viewer.getGraphicGraph().getNode(centerResource);
 					
@@ -280,8 +285,9 @@ public class GraphVisualization {
 						graph.getNode(centerResource).setAttribute("y", positionY + rand.nextDouble());
 					}
 				}
+				
 			}
-			
+	
 			// Add the corresponding community nodes in higher levels
 			for (int i = 0; i < communities.size(); i++) {
 				Set<Node> level = communities.get(i);
@@ -356,8 +362,9 @@ public class GraphVisualization {
 				// Recompute the layout
 				Layout layoutRecomputed = new SpringBox(false);;
 				computeLayout(graph, layoutRecomputed);	
-			}
+			} 
 		}	
+		
 		
 		return graph;
 	}

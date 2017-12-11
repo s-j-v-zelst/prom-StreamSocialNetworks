@@ -27,8 +27,7 @@ public class Louvain {
 		
 		// The set of communities 
 		Set<Set<Node>> communities = new HashSet<>();
-		
-		int hierarchy = 0;
+
 		// Iterate over the two phases of the algorithm. 		
 		while (!stop) {
 			// The community network at the start of the iteration
@@ -48,44 +47,9 @@ public class Louvain {
 			if (communityNetworkStart.equals(communityNetworkEnd)) {
 				stop = true;
 				break;
-			}
-			
-			
-			// PRINT COMMUNUNTIES
-			System.out.println("hierarchy: " + hierarchy);
-			Set<Node> communitiesX = new HashSet<>();
-			
-			for (NodesPair np : communityNetwork.keySet()) {		
-				Node nodeA = np.getNodeA();
-				Node nodeB = np.getNodeB();
-				
-				if (!communitiesX.contains(nodeA)) {
-					communitiesX.add(nodeA);
-				}
-				
-				if (!communitiesX.contains(nodeB)) {
-					communitiesX.add(nodeB);
-				}
-			}
-			
-			System.out.println("communities " + communitiesX.size());
-			System.out.println("communitiesPair " + communityNetwork.keySet().size());
-			
-			
-			// What are the communities?
-			for (Node node : communitiesX) {
-				Set<String> resourcesInCommunity = node.getResources();
-				
-				System.out.println("Community consists of resources: ");
-				for (String r : resourcesInCommunity) {
-					System.out.println(r);
-				}
-			}
-			
-			hierarchy = hierarchy + 1;
+			}	
 		}
-		
-		System.out.println("hierarchy " + hierarchy);
+
 		return communityNetwork;	
 	}
 	
